@@ -6,14 +6,16 @@ import com.chatroomserver.chatroonbackend.dto.request.LogoutRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
+import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
 import com.chatroomserver.chatroonbackend.service.user.UserService;
 import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("${api.prefix}")
+@RequestMapping("${application.api.prefix}")
 public class UserController {
     private final UserService userService;
 
@@ -47,6 +49,16 @@ public class UserController {
     ApiResponse<Object> logout(@RequestBody LogoutRequest request) throws Exception {
         userService.logout(request.getToken());
         return ApiResponse.builder().message("Logout successfully!").result(true).build();
+    }
+
+    @GetMapping("/my-info")
+    ApiResponse<UserResponse> getMyInfo(JwtAuthenticationToken jwt){
+        String userId = jwt.getName();
+        UserResponse userResponse = userService.getMyInfo(userId);
+        return ApiResponse.<UserResponse>builder()
+                .message("Get info successfully!")
+                .result(userResponse)
+                .build();
     }
 
 }

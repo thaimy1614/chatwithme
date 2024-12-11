@@ -4,6 +4,7 @@ import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
+import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
 import com.nimbusds.jose.JOSEException;
 
 public interface UserService {
@@ -16,4 +17,6 @@ public interface UserService {
     void logout(String token) throws Exception;
 
     LoginResponse outboundAuthenticate(String code) throws JOSEException;
+
+    UserResponse getMyInfo(String userId);
 }

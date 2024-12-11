@@ -5,6 +5,7 @@ import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
+import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
 import com.chatroomserver.chatroonbackend.exception.AppException;
 import com.chatroomserver.chatroonbackend.exception.ErrorCode;
 import com.chatroomserver.chatroonbackend.httpclient.OutboundIdentityClient;
@@ -176,12 +177,22 @@ public class UserServiceImpl implements UserService {
                             .build());
 
                 });
-        // Generate token
         var token = generateToken(user);
 
         return LoginResponse.builder()
                 .token(token)
                 .username(user.getUsername())
+                .build();
+    }
+
+    public UserResponse getMyInfo(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .fullName(user.getFullName())
                 .build();
     }
 }
