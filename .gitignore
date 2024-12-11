@@ -33,4 +33,4 @@ chatwithme-backend/build/
 .vscode/
 chatwithme-frontend/.env
 chatwithme-frontend/node_modules
-chatwithme-backend/.env
+**/.env
