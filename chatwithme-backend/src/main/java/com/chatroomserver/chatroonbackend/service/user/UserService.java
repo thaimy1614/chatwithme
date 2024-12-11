@@ -12,4 +12,6 @@ public interface UserService {
     boolean introspect(String token);
 
     SignupResponse signup(SignupRequest signupRequest);
+
+    void logout(String token) throws Exception;
 }

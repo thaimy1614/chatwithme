@@ -119,4 +119,17 @@ public class UserServiceImpl implements UserService {
 
         return SignupResponse.builder().success(true).build();
     }
+
+    private void addTokenToBlacklist(String jwtId, Date expiryTime) {
+        redisTemplate.opsForValue().set("bl_" + jwtId, jwtId);
+        redisTemplate.expireAt("bl_" + jwtId, expiryTime);
+    }
+
+    public void logout(String token) throws Exception {
+        var signedJWT = verifyToken(token, true);
+        String jId = signedJWT.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        addTokenToBlacklist(jId, expiryTime);
+    }
 }

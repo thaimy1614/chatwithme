@@ -2,6 +2,7 @@ package com.chatroomserver.chatroonbackend.controller;
 
 import com.chatroomserver.chatroonbackend.dto.ApiResponse;
 import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
+import com.chatroomserver.chatroonbackend.dto.request.LogoutRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
@@ -32,6 +33,12 @@ public class UserController {
                 .message("Signup successfully, please go to email to verify your email address.")
                 .result(response)
                 .build();
+    }
+
+    @GetMapping("/log-out")
+    ApiResponse<Object> logout(@RequestBody LogoutRequest request) throws Exception {
+        userService.logout(request.getToken());
+        return ApiResponse.builder().message("Logout successfully!").result(true).build();
     }
 
 }
