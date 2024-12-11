@@ -1,9 +1,12 @@
 package com.chatroomserver.chatroonbackend.service.user;
 
 import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
+import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
+import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.exception.AppException;
 import com.chatroomserver.chatroonbackend.exception.ErrorCode;
+import com.chatroomserver.chatroonbackend.mapper.UserMapper;
 import com.chatroomserver.chatroonbackend.model.User;
 import com.chatroomserver.chatroonbackend.repository.UserRepository;
 import com.nimbusds.jose.*;
@@ -28,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+    private final UserMapper userMapper;
     @Value("${jwt.signer-key}")
     private String KEY;
     @Value("${jwt.expiration-duration}")
@@ -102,5 +106,17 @@ public class UserServiceImpl implements UserService {
 
     private boolean isTokenInBlacklist(String jwtId) {
         return redisTemplate.opsForValue().get("bl_" + jwtId) != null;
+    }
+
+    public SignupResponse signup(SignupRequest request) {
+        userRepository.findByUsername(request.getUsername())
+                .ifPresent(ex -> {
+                    throw new AppException(ErrorCode.USER_EXISTED);
+                });
+        User user = userMapper.toUser(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+
+        return SignupResponse.builder().success(true).build();
     }
 }

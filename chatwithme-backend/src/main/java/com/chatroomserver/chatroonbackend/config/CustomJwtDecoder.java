@@ -2,6 +2,7 @@ package com.chatroomserver.chatroonbackend.config;
 
 import com.chatroomserver.chatroonbackend.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -15,6 +16,7 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CustomJwtDecoder implements JwtDecoder {
     private final UserService userService;
     @Value("${jwt.signer-key}")
@@ -24,6 +26,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     @Override
     public Jwt decode(String token) throws JwtException {
         try {
+            log.info("Jwt token: {}", token);
             var response = userService.introspect(token);
             if (!response) {
                 throw new JwtException("Token invalid");
