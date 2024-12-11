@@ -5,8 +5,11 @@ import {
   Switch,
   useHistory,
 } from "react-router-dom";
+import axios from 'axios'
 import { Login } from "./Layout/Login";
 import { ChatPage2 } from "./Layout/ChatPage2";
+axios.defaults.baseURL = import.meta.env.VITE_API_PREFIX || 'http://localhost:8080'
+axios.defaults.withCredentials = true
 function App() {
   const history = useHistory();
 
