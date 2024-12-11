@@ -1,11 +1,37 @@
 spring:
   data:
     mongodb:
-      username: user
-      password: password
-      host: localhost
-      port: 27018
-      database: chat_app
+      username: ${MONGO_DB_USERNAME}
+      password: ${MONGO_DB_PASSWORD}
+      host: ${MONGO_DB_HOST}
+      port: ${MONGO_DB_PORT}
+      database: ${MONGO_DB_DATABASE}
+
+    redis:
+      port: ${REDIS_PORT}
+      host: ${REDIS_HOST}
+  sql:
+    init:
+      encoding: UTF-8
+
+outbound:
+  identity:
+    client-id: ${CLIENT_ID}
+    client-secret: ${CLIENT_SECRET}
+    redirect-uri: ${REDIRECT_URI}
+
+jwt:
+  signer-key: ${JWT_SIGNING_KEY}
+  expiration-duration: 360000 # in sec
+  refreshable-duration: 360000 # in sec
 
 server:
-  port: 8088
+  port: 8080
+  servlet:
+    encoding:
+      charset: utf-8
+      force: true
+      enabled: true
+
+api:
+  prefix: /api
