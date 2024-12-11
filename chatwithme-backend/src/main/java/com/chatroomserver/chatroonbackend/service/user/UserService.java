@@ -14,4 +14,6 @@ public interface UserService {
     SignupResponse signup(SignupRequest signupRequest);
 
     void logout(String token) throws Exception;
+
+    LoginResponse outboundAuthenticate(String code) throws JOSEException;
 }

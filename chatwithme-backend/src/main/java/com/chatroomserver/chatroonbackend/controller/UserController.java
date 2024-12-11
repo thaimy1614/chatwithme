@@ -17,6 +17,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
+    @PostMapping("/outbound/authentication")
+    ApiResponse<LoginResponse> outboundAuthenticate(
+            @RequestParam("code") String code
+    ) throws JOSEException {
+        var result = userService.outboundAuthenticate(code);
+        return ApiResponse.<LoginResponse>builder().message("Login with google successfully!").result(result).build();
+    }
+
     @PostMapping("/login")
     ApiResponse<LoginResponse> login(@RequestBody LoginRequest request) throws Exception {
         var auth = userService.authenticate(request);

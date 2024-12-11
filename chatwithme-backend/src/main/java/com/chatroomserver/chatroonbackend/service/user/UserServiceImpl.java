@@ -1,11 +1,14 @@
 package com.chatroomserver.chatroonbackend.service.user;
 
+import com.chatroomserver.chatroonbackend.dto.request.ExchangeTokenRequest;
 import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.exception.AppException;
 import com.chatroomserver.chatroonbackend.exception.ErrorCode;
+import com.chatroomserver.chatroonbackend.httpclient.OutboundIdentityClient;
+import com.chatroomserver.chatroonbackend.httpclient.OutboundUserClient;
 import com.chatroomserver.chatroonbackend.mapper.UserMapper;
 import com.chatroomserver.chatroonbackend.model.User;
 import com.chatroomserver.chatroonbackend.repository.UserRepository;
@@ -15,6 +18,8 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +32,27 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
+    @NonFinal
+    protected final String GRANT_TYPE = "authorization_code";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
     private final UserMapper userMapper;
+    private final OutboundIdentityClient outboundIdentityClient;
+    private final OutboundUserClient outboundUserClient;
+    @NonFinal
+    @Value("${outbound.identity.client-id}")
+    protected String CLIENT_ID;
+    @NonFinal
+    @Value("${outbound.identity.client-secret}")
+    protected String CLIENT_SECRET;
+    @NonFinal
+    @Value("${outbound.identity.redirect-uri}")
+    protected String REDIRECT_URI;
+    @Value("${application.api.url}")
+    private String apiUrl;
     @Value("${jwt.signer-key}")
     private String KEY;
     @Value("${jwt.expiration-duration}")
@@ -131,5 +152,36 @@ public class UserServiceImpl implements UserService {
         Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         addTokenToBlacklist(jId, expiryTime);
+    }
+
+    public LoginResponse outboundAuthenticate(String code) throws JOSEException {
+        var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
+                .code(code)
+                .clientId(CLIENT_ID)
+                .clientSecret(CLIENT_SECRET)
+                .redirectUri(REDIRECT_URI)
+                .grantType(GRANT_TYPE)
+                .build());
+        log.info("TOKEN RESPONSE {}", response);
+
+        var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+
+        log.info("User Info {}", userInfo);
+
+        var user = userRepository.findByEmail(userInfo.getEmail()).orElseGet(
+                () -> {
+                    return userRepository.<User>save(User.builder()
+                            .email(userInfo.getEmail())
+                            .fullName(userInfo.getGivenName() + userInfo.getFamilyName())
+                            .build());
+
+                });
+        // Generate token
+        var token = generateToken(user);
+
+        return LoginResponse.builder()
+                .token(token)
+                .username(user.getUsername())
+                .build();
     }
 }
