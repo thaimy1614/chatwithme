@@ -1,4 +1,4 @@
-package com.s_service.s_service.dto;
+package com.chatroomserver.chatroonbackend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

@@ -1,6 +1,6 @@
-package com.s_service.s_service.exception;
+package com.chatroomserver.chatroonbackend.exception;
 
-import com.s_service.s_service.dto.ApiResponse;
+import com.chatroomserver.chatroonbackend.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

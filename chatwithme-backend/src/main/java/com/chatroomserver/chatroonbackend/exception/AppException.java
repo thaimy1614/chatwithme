@@ -1,4 +1,4 @@
-package com.s_service.s_service.exception;
+package com.chatroomserver.chatroonbackend.exception;
 
 import lombok.Getter;
 import lombok.Setter;
