@@ -6,7 +6,7 @@ spring:
       host: ${MONGO_DB_HOST}
       port: ${MONGO_DB_PORT}
       database: ${MONGO_DB_DATABASE}
-
+#
     redis:
       port: ${REDIS_PORT}
       host: ${REDIS_HOST}
