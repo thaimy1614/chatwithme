@@ -1,4 +1,4 @@
-package com.s_service.s_service.config;
+package com.chatroomserver.chatroonbackend.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

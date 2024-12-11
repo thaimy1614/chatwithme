@@ -1,8 +1,8 @@
-package com.s_service.s_service.config;
+package com.chatroomserver.chatroonbackend.config;
 
+import com.chatroomserver.chatroonbackend.dto.ApiResponse;
+import com.chatroomserver.chatroonbackend.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.s_service.s_service.dto.ApiResponse;
-import com.s_service.s_service.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
