@@ -13,12 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Data
-@Document(collection = "chat_rooms")
-public class ChatRoom {
+@Document(collection = "rooms")
+public class Room {
     @Id
-    private String id;
+    private String roomId;
     private String name;
-    private boolean isGroup;
+    private boolean group;
     private List<String> members;
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
