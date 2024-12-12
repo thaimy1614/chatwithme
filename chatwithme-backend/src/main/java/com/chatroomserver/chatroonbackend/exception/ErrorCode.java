@@ -16,6 +16,8 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     USERNAME_OR_PASSWORD_INCORRECT(1008, "Username or Password is incorrect", HttpStatus.BAD_REQUEST),
     INCORRECT_PASSWORD(1009, "Password is incorrect", HttpStatus.BAD_REQUEST),
+    NOT_HAVE_PERMISSION(1111, "Do not have permission", HttpStatus.UNAUTHORIZED),
+    ROOM_NOT_FOUND(1112, "Room not found", HttpStatus.NOT_FOUND),
 
     ;
 
