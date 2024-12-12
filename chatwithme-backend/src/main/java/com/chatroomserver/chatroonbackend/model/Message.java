@@ -1,22 +1,24 @@
 package com.chatroomserver.chatroonbackend.model;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@NoArgsConstructor
-@AllArgsConstructor
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
-@ToString
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Document(collection = "messages")
 public class Message {
-    private String senderName;
-
-    private String receiverName;
-
-    private String message;
-
-    private String media;
-
-    private Status status;
-    private String mediaType;
-
+    @Id
+    private String id;
+    private String roomId;
+    private String senderId;
+    private String content;
+    private String mediaUrl;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
