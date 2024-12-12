@@ -1,6 +1,8 @@
 package com.chatroomserver.chatroonbackend.service.room;
 
 import com.chatroomserver.chatroonbackend.dto.request.RoomCreationRequest;
+import com.chatroomserver.chatroonbackend.exception.AppException;
+import com.chatroomserver.chatroonbackend.exception.ErrorCode;
 import com.chatroomserver.chatroonbackend.mapper.RoomMapper;
 import com.chatroomserver.chatroonbackend.model.Room;
 import com.chatroomserver.chatroonbackend.repository.RoomRepository;
@@ -57,5 +59,15 @@ public class RoomServiceImpl implements RoomService{
         chatRoom.setCreatedAt(LocalDateTime.now());
 
         return roomRepository.save(chatRoom);
+    }
+
+    public boolean isUserInRoom(String userId, String roomId) {
+        Room room = roomRepository.findById(roomId).orElseThrow(
+                () -> new AppException(ErrorCode.ROOM_NOT_FOUND)
+        );
+        if(!room.getMembers().contains(userId)) {
+            return false;
+        }
+        return true;
     }
 }
