@@ -61,6 +61,11 @@ public class UserServiceImpl implements UserService {
     @Value("${jwt.refreshable-duration}")
     private String REFRESHABLE_DURATION;
 
+    public String getFullName(String userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)).getFullName();
+    }
+
     public LoginResponse authenticate(LoginRequest request) throws JOSEException {
         String username = request.getUsername();
         String password = request.getPassword();

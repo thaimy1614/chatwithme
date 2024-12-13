@@ -19,4 +19,6 @@ public interface UserService {
     LoginResponse outboundAuthenticate(String code) throws JOSEException;
 
     UserResponse getMyInfo(String userId);
+
+    String getFullName(String userId);
 }
