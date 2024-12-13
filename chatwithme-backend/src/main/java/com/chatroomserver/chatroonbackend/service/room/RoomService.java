@@ -14,4 +14,6 @@ public interface RoomService {
     Room createGroupChat(String createdBy, RoomCreationRequest roomCreationRequest);
 
     boolean isUserInRoom(String userId, String roomId);
+
+    Room getRoomInfo(String userId, String roomId);
 }

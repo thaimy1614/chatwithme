@@ -22,8 +22,8 @@ public class MessageController {
     @GetMapping("/{roomId}/messages")
     ApiResponse<Page<Message>> getMessagesByRoom(
             @PathVariable String roomId,
-            @RequestParam int page,
-            @RequestParam int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false, defaultValue = "createdAt") String key,
             JwtAuthenticationToken token
     ) {

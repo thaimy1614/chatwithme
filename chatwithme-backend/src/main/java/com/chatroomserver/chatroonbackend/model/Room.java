@@ -22,5 +22,6 @@ public class Room {
     private List<String> members;
     private String createdBy;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime lastMessageTime;
 }
 

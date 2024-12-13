@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class RoomController {
     private final RoomService roomService;
 
-    @GetMapping("/my-room")
+    @GetMapping("/my-rooms")
     ApiResponse<Page<Room>> getMyRooms(
             JwtAuthenticationToken token,
             @RequestParam(defaultValue = "0") int page,
@@ -24,6 +24,19 @@ public class RoomController {
         String userId = token.getName();
         Page<Room> response = roomService.getMyRooms(userId, page, size);
         return ApiResponse.<Page<Room>>builder()
+                .message("Get rooms successfully!")
+                .result(response)
+                .build();
+    }
+
+    @GetMapping("/{roomId}")
+    ApiResponse<Room> getMyRooms(
+            @PathVariable String roomId,
+                    JwtAuthenticationToken token
+            ) {
+        String userId = token.getName();
+        Room response = roomService.getRoomInfo(userId, roomId);
+        return ApiResponse.<Room>builder()
                 .message("Get rooms successfully!")
                 .result(response)
                 .build();

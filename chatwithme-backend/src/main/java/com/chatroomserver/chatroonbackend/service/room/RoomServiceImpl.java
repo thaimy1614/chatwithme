@@ -9,6 +9,7 @@ import com.chatroomserver.chatroonbackend.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,7 +24,15 @@ public class RoomServiceImpl implements RoomService{
     private final RoomMapper roomMapper;
 
     public Page<Room> getMyRooms(String userId, int page, int size) {
-        return roomRepository.findByMembersContaining(userId, PageRequest.of(page, size));
+        return roomRepository.findByMembersContaining(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "lastMessageTime")));
+    }
+
+    public Room getRoomInfo(String userId, String roomId) {
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
+        if (!room.getMembers().contains(userId)) {
+            throw new AppException(ErrorCode.NOT_HAVE_PERMISSION);
+        }
+        return room;
     }
 
     // Tạo phòng chat 1-1
