@@ -1,23 +1,79 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import { over } from "stompjs";
+import { getCurrentRoom } from "../services/localStorageService";
 var stompClient = null;
 
 export const ChatPage2 = () => {
-  const history = useHistory();
-  if (localStorage.getItem("chat-username").trim().length == 0) {
-    history.push("/login");
+  const navigate = useNavigate();
+  const userInfo = localStorage.getItem("userInfo");
+  if (!userInfo) {
+    navigate.push("/login");
   }
+  const user = JSON.parse(userInfo);
 
-  const [username] = useState(localStorage.getItem("chat-username"));
+  const [fullName] = useState(user.fullName);
   const [receiver, setReceiver] = useState("");
   const [message, setMessage] = useState("");
   const [media, setMedia] = useState("");
-  const [tab, setTab] = useState("CHATROOM");
-  const [publicChats, setPublicChats] = useState([]);
-  const [privateChats, setPrivateChats] = useState(new Map());
+  const [rooms, setRooms] = useState([]);
+  const [roomInfo, setRoomInfo] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [currentRoom, setCurrentRoom] = useState("");
+
+  useEffect(() => {
+    fetchMyRooms();
+  });
+
+  const fetchMyRooms = async () => {
+    try {
+      const response = await axios.get("/room/my-rooms", {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+      const data = await response.data;
+      console.log(data);
+      setRooms(JSON.stringify(data.result));
+      return data.result;
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    }
+  };
+
+  const fetchMessages = async () => {
+    try {
+      const response = await axios.get(`/message/${currentRoom}/messages`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+      const data = await response.data;
+      console.log(data);
+      setMessage(JSON.stringify(data.result));
+      return data.result;
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    }
+  };
+
+  const fetchCurrentRoom = async () => {
+    try {
+      const response = await axios.get(`/room/${currentRoom}`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+      const data = await response.data;
+      console.log(data);
+      setRoomInfo(JSON.stringify(data.result));
+      return data.result;
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    }
+  };
 
   //const data = media.split(";")[0].split("/")[0].split(":")[1];
   //console.log(data);
@@ -76,7 +132,7 @@ export const ChatPage2 = () => {
   const handleLogout = () => {
     userLeft();
     localStorage.removeItem("chat-username");
-    history.push("/login");
+    navigate.push("/login");
   };
   //userJoin
   const userJoin = () => {
@@ -104,7 +160,12 @@ export const ChatPage2 = () => {
   };
 
   useEffect(() => {
-    connect();
+    fetchMyRooms();
+    const currentRoom = getCurrentRoom();
+    if(currentRoom){
+      setCurrentRoom(currentRoom);
+      ge
+    }
   }, []);
 
   //file handler method
@@ -197,30 +258,27 @@ export const ChatPage2 = () => {
             backgroundColor: "transparent",
           }}
         >
-          <ul className="list-group">
-            <li
-              key={"o"}
-              className={`list-group-item ${
-                tab === "CHATROOM" && "bg-primary text-light"
-              }`}
-              onClick={() => setTab("CHATROOM")}
-            >
-              <span className="">Chat Room</span>
-            </li>
-            {[...privateChats.keys()].map((name, index) => {
-              return (
+          {rooms.length === 0 ? (
+            <p className="text-muted">Không có đứa nào để hiển thị, mời tìm kiếm bên trên :v.</p>
+          ) : (
+            <ul className="list-group">
+              {rooms.map((room) => (
                 <li
-                  key={index}
-                  onClick={() => tabReceiverSet(name)}
-                  className={`list-group-item ${
-                    tab === name && "bg-primary text-light"
+                  key={room.id}
+                  className={`list-group-item d-flex justify-content-between align-items-center ${
+                    currentRoom === room.id ? "bg-primary text-light" : ""
                   }`}
+                  onClick={() => {
+                    setCurrentRoom(room.id);
+
+                  }}
+                  style={{ cursor: "pointer" }}
                 >
-                  <span className="fs-5">{name}</span>
+                  <span className="fw-bold">{room.name}</span>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="d-flex flex-column" style={{ flexGrow: 1 }}>
           {/*Chat box */}
