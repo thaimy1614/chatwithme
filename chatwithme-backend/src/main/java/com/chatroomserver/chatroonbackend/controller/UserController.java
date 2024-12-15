@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${application.api.prefix}/user")
@@ -56,6 +58,24 @@ public class UserController {
         String userId = jwt.getName();
         UserResponse userResponse = userService.getMyInfo(userId);
         return ApiResponse.<UserResponse>builder()
+                .message("Get info successfully!")
+                .result(userResponse)
+                .build();
+    }
+
+    @GetMapping("/{userId}")
+    ApiResponse<UserResponse> getMyInfo(@PathVariable String userId){
+        UserResponse userResponse = userService.getMyInfo(userId);
+        return ApiResponse.<UserResponse>builder()
+                .message("Get info successfully!")
+                .result(userResponse)
+                .build();
+    }
+
+    @GetMapping()
+    ApiResponse<List<UserResponse>> getAllUsers(){
+        List<UserResponse> userResponse = userService.getAllUsers();
+        return ApiResponse.<List<UserResponse>>builder()
                 .message("Get info successfully!")
                 .result(userResponse)
                 .build();

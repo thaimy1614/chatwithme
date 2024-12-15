@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -199,5 +200,10 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getUserId())
                 .fullName(user.getFullName())
                 .build();
+    }
+
+    public List<UserResponse> getAllUsers(){
+        List<User> users = userRepository.findAll();
+        return users.stream().map(userMapper::toUserResponse).toList();
     }
 }
