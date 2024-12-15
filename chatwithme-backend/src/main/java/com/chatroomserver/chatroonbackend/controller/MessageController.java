@@ -23,14 +23,14 @@ public class MessageController {
     ApiResponse<Page<Message>> getMessagesByRoom(
             @PathVariable String roomId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "1000") int size,
             @RequestParam(required = false, defaultValue = "createdAt") String key,
             JwtAuthenticationToken token
     ) {
         String userId = token.getName();
         Pageable pageable;
         if (key != null && !key.isEmpty()) {
-            Sort sort = Sort.by(key).ascending();
+            Sort sort = Sort.by(key).descending();
             pageable = PageRequest.of(page, size, sort);
         } else {
             pageable = PageRequest.of(page, size);
