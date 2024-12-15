@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatMessage {
     private String senderId;
-    private String recipientId;
+    private String senderName;
     private String roomId;
     private String content;
     private String media;

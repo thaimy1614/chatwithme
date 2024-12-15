@@ -18,7 +18,8 @@ public class Message {
     private String id;
     private String roomId;
     private String senderId;
+    private String senderName;
     private String content;
-    private String mediaUrl;
+    private String media;
     private LocalDateTime createdAt = LocalDateTime.now();
 }
