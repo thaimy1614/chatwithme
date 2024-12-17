@@ -8,4 +8,5 @@ import lombok.Data;
 public class UserResponse {
     private String userId;
     private String fullName;
+    private String photoUrl;
 }
