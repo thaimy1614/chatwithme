@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserRequest {
     private String fullName;
-    private String photoUrl;
+    private String photoURL;
 }

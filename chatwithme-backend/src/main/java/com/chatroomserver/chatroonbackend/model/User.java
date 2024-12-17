@@ -18,7 +18,7 @@ public class User {
     private String userId;
     private String username;
     private String password;
-    private String photoUrl;
+    private String photoURL;
     private String email;
     private String fullName;
     private UserStatus status;

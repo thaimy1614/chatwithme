@@ -213,7 +213,7 @@ public class UserServiceImpl implements UserService {
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
         user.setFullName(userRequest.getFullName());
-        user.setPhotoUrl(userRequest.getPhotoUrl());
+        user.setPhotoURL(userRequest.getPhotoURL());
         user = userRepository.save(user);
         return userMapper.toUserResponse(user);
     }
