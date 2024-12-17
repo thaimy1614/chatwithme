@@ -39,10 +39,10 @@ export default function Authenticate() {
     const fetchUserAndNavigate = async () => {
       if (isLoggedin) {
         try {
-          const userInfo = await fetchUserInfo(); // Wait for user info fetch
+          const userInfo = await fetchUserInfo(); 
 
           if (userInfo) {
-            navigate("/home"); // Navigate to home after fetching user info
+            navigate("/");
           } else {
             console.error("Failed to retrieve user info.");
           }
