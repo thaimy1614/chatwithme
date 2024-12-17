@@ -43,7 +43,8 @@ public class RoomController {
     }
 
     @PostMapping("/private")
-    ApiResponse<Room> createPrivateChat(@RequestParam String userId1, @RequestParam String userId2) {
+    ApiResponse<Room> createPrivateChat(JwtAuthenticationToken token, @RequestParam String userId2) {
+        String userId1 = token.getName();
         Room chatRoom = roomService.createPrivateChat(userId1, userId2);
         return ApiResponse.<Room>builder()
                 .message("Private chat successfully!")
