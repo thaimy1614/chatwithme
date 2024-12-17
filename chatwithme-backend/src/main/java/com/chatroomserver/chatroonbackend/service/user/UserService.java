@@ -2,6 +2,7 @@ package com.chatroomserver.chatroonbackend.service.user;
 
 import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
+import com.chatroomserver.chatroonbackend.dto.request.UserRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
@@ -21,6 +22,8 @@ public interface UserService {
     LoginResponse outboundAuthenticate(String code) throws JOSEException;
 
     UserResponse getMyInfo(String userId);
+
+    UserResponse updateMyInfo(String userId, UserRequest userRequest);
 
     String getFullName(String userId);
 

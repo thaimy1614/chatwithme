@@ -4,6 +4,7 @@ import com.chatroomserver.chatroonbackend.dto.ApiResponse;
 import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
 import com.chatroomserver.chatroonbackend.dto.request.LogoutRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
+import com.chatroomserver.chatroonbackend.dto.request.UserRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
@@ -78,6 +79,15 @@ public class UserController {
         return ApiResponse.<List<UserResponse>>builder()
                 .message("Get info successfully!")
                 .result(userResponse)
+                .build();
+    }
+
+    @PutMapping()
+    ApiResponse<UserResponse> updateUser(JwtAuthenticationToken token, @RequestBody UserRequest userRequest){
+        String userId = token.getName();
+        UserResponse response = userService.updateMyInfo(userId, userRequest);
+        return ApiResponse.<UserResponse>builder()
+                .result(response)
                 .build();
     }
 

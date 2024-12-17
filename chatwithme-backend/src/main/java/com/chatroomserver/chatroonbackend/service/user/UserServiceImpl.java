@@ -3,6 +3,7 @@ package com.chatroomserver.chatroonbackend.service.user;
 import com.chatroomserver.chatroonbackend.dto.request.ExchangeTokenRequest;
 import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
 import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
+import com.chatroomserver.chatroonbackend.dto.request.UserRequest;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
@@ -205,5 +206,15 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> getAllUsers(){
         List<User> users = userRepository.findAll();
         return users.stream().map(userMapper::toUserResponse).toList();
+    }
+
+    public UserResponse updateMyInfo(String userId, UserRequest userRequest){
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+        user.setFullName(userRequest.getFullName());
+        user.setPhotoUrl(userRequest.getPhotoUrl());
+        user = userRepository.save(user);
+        return userMapper.toUserResponse(user);
     }
 }
