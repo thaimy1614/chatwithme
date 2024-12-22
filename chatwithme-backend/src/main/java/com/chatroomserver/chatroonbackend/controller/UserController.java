@@ -11,6 +11,9 @@ import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
 import com.chatroomserver.chatroonbackend.service.user.UserService;
 import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +58,7 @@ public class UserController {
     }
 
     @GetMapping("/my-info")
-    ApiResponse<UserResponse> getMyInfo(JwtAuthenticationToken jwt){
+    ApiResponse<UserResponse> getMyInfo(JwtAuthenticationToken jwt) {
         String userId = jwt.getName();
         UserResponse userResponse = userService.getMyInfo(userId);
         return ApiResponse.<UserResponse>builder()
@@ -65,7 +68,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    ApiResponse<UserResponse> getMyInfo(@PathVariable String userId){
+    ApiResponse<UserResponse> getMyInfo(@PathVariable String userId) {
         UserResponse userResponse = userService.getMyInfo(userId);
         return ApiResponse.<UserResponse>builder()
                 .message("Get info successfully!")
@@ -74,7 +77,7 @@ public class UserController {
     }
 
     @GetMapping()
-    ApiResponse<List<UserResponse>> getAllUsers(){
+    ApiResponse<List<UserResponse>> getAllUsers() {
         List<UserResponse> userResponse = userService.getAllUsers();
         return ApiResponse.<List<UserResponse>>builder()
                 .message("Get info successfully!")
@@ -83,11 +86,29 @@ public class UserController {
     }
 
     @PutMapping()
-    ApiResponse<UserResponse> updateUser(JwtAuthenticationToken token, @RequestBody UserRequest userRequest){
+    ApiResponse<UserResponse> updateUser(JwtAuthenticationToken token, @RequestBody UserRequest userRequest) {
         String userId = token.getName();
         UserResponse response = userService.updateMyInfo(userId, userRequest);
         return ApiResponse.<UserResponse>builder()
                 .result(response)
+                .build();
+    }
+
+    @GetMapping("/search")
+    ApiResponse<Page<UserResponse>> searchUsers
+            (
+                    @RequestParam int page,
+                    @RequestParam int size,
+                    @RequestParam String key
+            ) {
+        Pageable pageable = PageRequest.of(page, size);
+        if(key == null || key.isEmpty()) {
+            return null;
+        }
+        Page<UserResponse> res = userService.searchUsers(key, pageable);
+
+        return ApiResponse.<Page<UserResponse>>builder()
+                .result(res)
                 .build();
     }
 

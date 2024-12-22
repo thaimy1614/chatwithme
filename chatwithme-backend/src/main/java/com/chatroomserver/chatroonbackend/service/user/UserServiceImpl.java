@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,17 @@ public class UserServiceImpl implements UserService {
     private long EXPIRATION_DURATION;
     @Value("${jwt.refreshable-duration}")
     private String REFRESHABLE_DURATION;
+
+    public Page<UserResponse> searchUsers(String keyword, Pageable pageable) {
+        Page<User> users;
+        if (keyword.contains("@")) {
+            keyword = keyword.replace("@", "");
+            users = userRepository.findByUsernameContainingIgnoreCase(keyword, pageable);
+        } else {
+            users = userRepository.findByFullNameContainingIgnoreCase(keyword, pageable);
+        }
+        return users.map(userMapper::toUserResponse);
+    }
 
     public String getFullName(String userId) {
         return userRepository.findById(userId).orElseThrow(
@@ -197,18 +210,15 @@ public class UserServiceImpl implements UserService {
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
 
-        return UserResponse.builder()
-                .userId(user.getUserId())
-                .fullName(user.getFullName())
-                .build();
+        return userMapper.toUserResponse(user);
     }
 
-    public List<UserResponse> getAllUsers(){
+    public List<UserResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream().map(userMapper::toUserResponse).toList();
     }
 
-    public UserResponse updateMyInfo(String userId, UserRequest userRequest){
+    public UserResponse updateMyInfo(String userId, UserRequest userRequest) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
