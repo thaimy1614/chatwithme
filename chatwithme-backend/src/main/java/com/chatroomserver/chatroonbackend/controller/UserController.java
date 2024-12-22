@@ -97,8 +97,8 @@ public class UserController {
     @GetMapping("/search")
     ApiResponse<Page<UserResponse>> searchUsers
             (
-                    @RequestParam int page,
-                    @RequestParam int size,
+                    @RequestParam(defaultValue = "0") int page,
+                    @RequestParam(defaultValue = "5") int size,
                     @RequestParam String key
             ) {
         Pageable pageable = PageRequest.of(page, size);
