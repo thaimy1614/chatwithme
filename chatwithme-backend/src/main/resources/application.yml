@@ -33,6 +33,17 @@ server:
       force: true
       enabled: true
 
+momo:
+  secret-key: ${MOMO_SECRET_KEY}
+  access-key: ${MOMO_ACCESS_KEY}
+#  order-type: ${MOMO_ORDER_TYPE}
+  request-type: ${MOMO_REQUEST_TYPE}
+#  pay-type: ${MOMO_PAY_TYPE}
+  redirect-url: ${MOMO_REDIRECT_URL}
+  ipn-url: ${MOMO_IPN_URL}
+  base-url: ${MOMO_BASE_URL}
+  id-momo: ${MOMO_ID_MOMO}
+
 application:
   api:
     prefix: /api
