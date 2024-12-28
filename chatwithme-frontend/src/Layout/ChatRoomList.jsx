@@ -1,18 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { getCurrentRoom } from "../services/localStorageService";
+import { Avatar, Box, Divider, List, ListItem, ListItemAvatar, ListItemText, Paper, Typography } from "@mui/material";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
-const ChatRoomList = () => {
-  const [rooms, setRooms] = useState([]);
-  const [page, setPage] = useState(0);
+const ChatRoomList = ({rooms, setRooms, currentRoom, setCurrentRoom, page, setPage}) => {
   const [hasMore, setHasMore] = useState(true);
   const loader = useRef(null);
 
-  // Fetch danh sách phòng chat
   const fetchRooms = async (currentPage) => {
     try {
-      const response = await axios.get(`/api/rooms?page=${currentPage}&size=${PAGE_SIZE}`);
+      const response = await axios.get(
+        `/room/my-rooms?page=${currentPage}&size=${PAGE_SIZE}`
+      );
       if (response.data.content.length > 0) {
         setRooms((prevRooms) => [...prevRooms, ...response.data.content]);
       } else {
@@ -23,11 +24,6 @@ const ChatRoomList = () => {
     }
   };
 
-  useEffect(() => {
-    fetchRooms(page);
-  }, [page]);
-
-  // IntersectionObserver để theo dõi khi người dùng scroll đến loader
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -50,18 +46,62 @@ const ChatRoomList = () => {
   }, [hasMore]);
 
   return (
-    <div>
-      <h2>Danh Sách Phòng Chat</h2>
-      <ul>
-        {rooms.map((room) => (
-          <li key={room.roomId}>
-            {room.name} - {new Date(room.lastMessageTime).toLocaleString()}
-          </li>
-        ))}
-      </ul>
-      {hasMore && <div ref={loader} style={{ height: "20px", margin: "10px", textAlign: "center" }}>Đang tải...</div>}
-    </div>
+    <Box
+      width="30%"
+      bgcolor="#1e1e2e"
+      color="white"
+      overflow="auto"
+      sx={{
+        height: 500, // Chiều cao cố định
+        overflowY: "auto", // Cho phép cuộn nếu danh sách dài
+        borderRadius: 2,
+        boxShadow: 3,
+        padding: 2, // Thêm padding để không gian rộng rãi hơn
+      }}
+    >
+      {rooms.length === 0 ? (
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
+          Không có đứa nào để hiển thị, tìm kiếm bên trên :v.
+        </Typography>
+      ) : (
+        <List>
+          {rooms.map((room) => (
+            <ListItem
+              key={room.roomId}
+              button
+              selected={currentRoom === room.roomId}
+              onClick={() => setCurrentRoom(room.roomId)}
+              sx={{
+                backgroundColor: currentRoom === room.roomId ? "primary.main" : "transparent",
+                color: currentRoom === room.roomId ? "white" : "black",
+                marginBottom: 1,
+                borderRadius: 1,
+                padding: 1.5, // Tăng padding để phần tử nhìn thoải mái hơn
+                '&:hover': {
+                  backgroundColor: "primary.light", // Hiệu ứng hover
+                },
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar src="/assets/images/logo.png" />
+              </ListItemAvatar>
+              <ListItemText
+                primary={room.name}
+                sx={{ fontWeight: "bold", color: currentRoom === room.roomId ? "white" : "black" }}
+              />
+              <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }} />
+            </ListItem>
+          ))}
+        </List>
+      )}
+      {hasMore && (
+        <div ref={loader} className="text-center my-2">
+          Từ từ, đang tải thêm...
+        </div>
+      )}
+    </Box>
   );
+  
 };
 
 export default ChatRoomList;

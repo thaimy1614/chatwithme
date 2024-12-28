@@ -1,9 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import { over } from "stompjs";
-import { getCurrentRoom } from "../services/localStorageService";
+import { getCurrentRoom, getToken } from "../services/localStorageService";
+import ChatRoomList from "./ChatRoomList";
+import axios from "axios";
+import {
+  Container,
+  Paper,
+  Box,
+  TextField,
+  Button,
+  IconButton,
+  InputBase,
+} from "@mui/material";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import SendIcon from "@mui/icons-material/Send";
+
 var stompClient = null;
 
 export const ChatPage2 = () => {
@@ -19,13 +33,10 @@ export const ChatPage2 = () => {
   const [message, setMessage] = useState("");
   const [media, setMedia] = useState("");
   const [rooms, setRooms] = useState([]);
-  const [roomInfo, setRoomInfo] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [roomInfo, setRoomInfo] = useState(null);
+  const [messages, setMessages] = useState();
   const [currentRoom, setCurrentRoom] = useState("");
-
-  useEffect(() => {
-    fetchMyRooms();
-  });
+  const [page, setPage] = useState(0);
 
   const fetchMyRooms = async () => {
     try {
@@ -36,8 +47,8 @@ export const ChatPage2 = () => {
       });
       const data = await response.data;
       console.log(data);
-      setRooms(JSON.stringify(data.result));
-      return data.result;
+      setRooms(data.result.content);
+      return data.result.content;
     } catch (error) {
       console.error("Error fetching rooms:", error);
     }
@@ -52,7 +63,7 @@ export const ChatPage2 = () => {
       });
       const data = await response.data;
       console.log(data);
-      setMessage(JSON.stringify(data.result));
+      setMessages(data.result.content);
       return data.result;
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -68,7 +79,7 @@ export const ChatPage2 = () => {
       });
       const data = await response.data;
       console.log(data);
-      setRoomInfo(JSON.stringify(data.result));
+      setRoomInfo(data.result);
       return data.result;
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -78,53 +89,28 @@ export const ChatPage2 = () => {
   //const data = media.split(";")[0].split("/")[0].split(":")[1];
   //console.log(data);
 
+  function getMediaType(media) {
+    if (!media || typeof media !== "string") return null;
+    try {
+      const type = media.split(";")[0].split("/")[0].split(":")[1];
+      return type;
+    } catch (error) {
+      console.error("Error parsing media type:", error);
+      return null;
+    }
+  }
+
   const onMessageReceived = (payload) => {
     const payloadData = JSON.parse(payload.body);
     console.log(payloadData);
-    switch (payloadData.status) {
-      case "JOIN":
-        if (payloadData.senderName != username) {
-          if (!privateChats.get(payloadData.senderName)) {
-            privateChats.set(payloadData.senderName, []);
-            setPrivateChats(new Map(privateChats));
-          }
-        }
-        break;
-      case "LEAVE":
-        if (payloadData.senderName != username) {
-          if (privateChats.get(payloadData.senderName)) {
-            privateChats.delete(payloadData.senderName);
-            setPrivateChats(new Map(privateChats));
-          }
-        }
-        break;
-      case "MESSAGE":
-        publicChats.push(payloadData);
-        setPublicChats((prev) => [...prev, payloadData]);
-    }
-  };
 
-  const onPrivateMessage = (payload) => {
-    console.log(payload);
-    var payloadData = JSON.parse(payload.body);
-    if (privateChats.has(payloadData.senderName)) {
-      const chatMessages = privateChats.get(payloadData.senderName);
-      chatMessages.push(payloadData);
-      privateChats.set(payloadData.senderName, chatMessages);
-      setPrivateChats(new Map(privateChats));
-    } else {
-      let list = [];
-      list.push(payloadData);
-      privateChats.set(payloadData.senderName, list);
-      setPrivateChats(new Map(privateChats));
-    }
+    setMessages((prev) => [...prev, payloadData]);
   };
 
   const onConnect = () => {
     console.log("Connected");
-    stompClient.subscribe("/chatroom/public", onMessageReceived);
-    stompClient.subscribe(`/user/${username}/private`, onPrivateMessage);
-    userJoin();
+    stompClient.subscribe(`/user/${user.userId}/chat`, onMessageReceived);
+    // userJoin();
   };
   const onError = (err) => {
     console.log("err=>", err);
@@ -134,19 +120,17 @@ export const ChatPage2 = () => {
     localStorage.removeItem("chat-username");
     navigate.push("/login");
   };
-  //userJoin
   const userJoin = () => {
     let chatMessage = {
-      senderName: username,
+      senderName: fullName,
       status: "JOIN",
     };
 
     stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
   };
-  //userLeft
   const userLeft = () => {
     let chatMessage = {
-      senderName: username,
+      senderName: fullName,
       status: "LEAVE",
     };
 
@@ -154,21 +138,22 @@ export const ChatPage2 = () => {
   };
 
   const connect = () => {
-    let sock = new SockJS(import.meta.env.VITE_API_PREFIX + "/ws");
+    let sock = new SockJS(import.meta.env.VITE_API_HOST_PORT + "/ws");
     stompClient = over(sock);
     stompClient.connect({}, onConnect, onError);
   };
 
   useEffect(() => {
-    fetchMyRooms();
-    const currentRoom = getCurrentRoom();
-    if(currentRoom){
-      setCurrentRoom(currentRoom);
-      ge
+    if (currentRoom != "") {
+      fetchCurrentRoom();
+      fetchMessages();
     }
+  }, [currentRoom]);
+  useEffect(() => {
+    fetchMyRooms();
+    connect();
   }, []);
 
-  //file handler method
   async function base64ConversionForImages(e) {
     if (e.target.files[0]) {
       getBase64(e.target.files[0]);
@@ -189,328 +174,203 @@ export const ChatPage2 = () => {
     };
   }
 
-  //send chatroom message
   const sendMessage = () => {
     if (message.trim().length > 0 || message.media != null) {
       stompClient.send(
-        "/app/message",
+        `/app/chat/${roomInfo.roomId}`,
         {},
         JSON.stringify({
-          senderName: username,
-          status: "MESSAGE",
+          senderId: user.userId,
           media: media,
-          message: message,
+          content: message,
         })
       );
+      const messageToSave = {
+        content: message,
+        senderId: user.userId,
+        senderName: fullName,
+        media: media,
+        createdAt: new Date(),
+      };
+      setMessages((prev) => [...prev, messageToSave]);
       setMessage("");
       setMedia("");
     }
   };
 
-  //send Private message
-  const sendPrivate = () => {
-    if (message.trim().length > 0) {
-      if (stompClient) {
-        let chatMessage = {
-          senderName: username,
-          receiverName: tab,
-          message: message,
-          media: media,
-          status: "MESSAGE",
-        };
-
-        privateChats.get(tab).push(chatMessage);
-        setPrivateChats(new Map(privateChats));
-
-        stompClient.send(
-          "/app/private-message",
-          {},
-          JSON.stringify(chatMessage)
-        );
-        setMessage("");
-        setMedia("");
-      }
+  const messagesEndRef = useRef(null);
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
-  };
-
-  const tabReceiverSet = (name) => {
-    setReceiver(name);
-    setTab(name);
-  };
+  }, [messages]);
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center "
-      style={{
+    <Box
+      className="d-flex justify-content-center align-items-center"
+      sx={{
         height: "100vh",
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://picsum.photos/1536/735?grayscale")`,
-        backgroundRepeat: "none",
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://picsum.photos/1536/735?redscale")`,
         backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
-      <div className="container d-flex p-0">
-        {/*Member List */}
-        <div
-          className="chat-tab p-3"
-          style={{
-            width: "200px",
-            height: "551px",
-            backgroundColor: "transparent",
+      <Box
+        className="container d-flex p-0"
+        sx={{
+          display: "flex",
+          width: "90%",
+          maxWidth: "1200px",
+          maxHeight: "90vh",
+          flexDirection: { xs: "column", sm: "row" },
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
+        <ChatRoomList
+          setCurrentRoom={setCurrentRoom}
+          rooms={rooms}
+          currentRoom={currentRoom}
+          page={page}
+          setPage={setPage}
+        />
+        <Box
+          sx={{
+            flexGrow: 1,
+            ml: 2,
+            display: "flex",
+            flexDirection: "column",
+            borderRadius: 2,
+            boxShadow: 3,
+            overflow: "hidden",
           }}
         >
-          {rooms.length === 0 ? (
-            <p className="text-muted">Không có đứa nào để hiển thị, mời tìm kiếm bên trên :v.</p>
-          ) : (
-            <ul className="list-group">
-              {rooms.map((room) => (
-                <li
-                  key={room.id}
-                  className={`list-group-item d-flex justify-content-between align-items-center ${
-                    currentRoom === room.id ? "bg-primary text-light" : ""
-                  }`}
-                  onClick={() => {
-                    setCurrentRoom(room.id);
-
-                  }}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span className="fw-bold">{room.name}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="d-flex flex-column" style={{ flexGrow: 1 }}>
-          {/*Chat box */}
-          <div
+          <Paper
             className="chat-messages p-3"
-            style={{
-              height: "500px",
+            ref={messagesEndRef}
+            sx={{
+              height: 500, // Fixed height
               flexGrow: 1,
-              backgroundColor: "#d3d3c5",
-              overflowY: "scroll",
-              padding: "2px",
-              border: "1px solid green",
+              backgroundColor: "#f5f5f5",
+              overflowY: "auto", // Enables scroll if content exceeds height
+              padding: 2,
+              border: "1px solid #1976d2",
               display: "flex",
               flexDirection: "column",
-              gap: "8px",
+              gap: 2,
+              borderRadius: 2,
             }}
           >
-            {tab === "CHATROOM"
-              ? publicChats.map((message, index) => {
-                  if (message.senderName != username) {
-                    return (
-                      <div className="d-flex justify-content-start" key={index}>
-                        <div
-                          className=" d-flex p-2 "
-                          style={{
-                            borderTopRightRadius: "5px",
-                            borderBottomRightRadius: "5px",
-                            borderTopLeftRadius: "5px",
-                            backgroundColor: "white",
-                          }}
-                        >
-                          <div className=" rounded-3 px-2 me-2 align-self-start">
-                            <div className="bg-warning">
-                              {message.senderName}
-                            </div>
-                            <div>
-                              <div>{message.message}</div>
-                              <div>
-                                {message.media
-                                  .split(";")[0]
-                                  .split("/")[0]
-                                  .split(":")[1] === "image" && (
-                                  <img
-                                    src={message.media}
-                                    alt=""
-                                    width={"250px"}
-                                  />
-                                )}
-                              </div>{" "}
-                              <div>
-                                {message.media
-                                  .split(";")[0]
-                                  .split("/")[0]
-                                  .split(":")[1] === "video" && (
-                                  <video width="320" height="240" controls>
-                                    <source
-                                      src={message.media}
-                                      type="video/mp4"
-                                    />
-                                  </video>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <div className="d-flex justify-content-end " key={index}>
-                        <div
-                          className=" bg-primary p-2"
-                          style={{
-                            borderTopRightRadius: "5px",
-                            borderTopLeftRadius: "5px",
-                            borderBottomLeftRadius: "5px",
-                          }}
-                        >
-                          <div className="text-white">{message.message}</div>
-                          {message.media
-                            .split(";")[0]
-                            .split("/")[0]
-                            .split(":")[1] === "image" && (
-                            <img src={message.media} alt="" width={"250px"} />
-                          )}
-                          {message.media
-                            .split(";")[0]
-                            .split("/")[0]
-                            .split(":")[1] === "video" && (
-                            <video width="320" height="240" controls>
-                              <source src={message.media} type="video/mp4" />
-                            </video>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }
-                })
-              : privateChats.get(tab).map((message, index) => {
-                  if (message.senderName != username) {
-                    return (
-                      <div className="d-flex justify-content-start" key={index}>
-                        <div
-                          className=" d-flex p-2 flex-column"
-                          style={{
-                            borderTopRightRadius: "5px",
-                            borderBottomRightRadius: "5px",
-                            borderTopLeftRadius: "5px",
-                            backgroundColor: "white",
-                            maxWidth: "500px",
-                          }}
-                        >
-                          {/* <div className="bg-warning rounded-3 px-2 me-2 align-self-start"></div> */}
-                          <div className="">{message.message}</div>
-                          <div>
-                            {message.media
-                              .split(";")[0]
-                              .split("/")[0]
-                              .split(":")[1] === "image" && (
-                              <img src={message.media} alt="" width={"250px"} />
-                            )}
-                          </div>
-                          <div>
-                            {message.media
-                              .split(";")[0]
-                              .split("/")[0]
-                              .split(":")[1] === "video" && (
-                              <video width="320" height="240" controls>
-                                <source src={message.media} type="video/mp4" />
-                              </video>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <div className="d-flex justify-content-end " key={index}>
-                        <div
-                          className=" bg-primary p-2"
-                          style={{
-                            borderTopRightRadius: "5px",
-                            borderTopLeftRadius: "5px",
-                            borderBottomLeftRadius: "5px",
-                            maxWidth: "500px",
-                          }}
-                        >
-                          <div className="text-white">{message.message}</div>
-                          {message.media
-                            .split(";")[0]
-                            .split("/")[0]
-                            .split(":")[1] === "image" && (
-                            <img src={message.media} alt="" width={"250px"} />
-                          )}
-                          {message.media
-                            .split(";")[0]
-                            .split("/")[0]
-                            .split(":")[1] === "video" && (
-                            <video width="320" height="240" controls>
-                              <source src={message.media} type="video/mp4" />
-                            </video>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }
-                })}
-          </div>
-          {/*message box */}
-          <div className="form-control d-flex">
-            <input
-              className="px-2 py-2"
-              type="text"
-              placeholder="Message"
+            {messages &&
+              messages.map((message, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      message.senderId === user.userId
+                        ? "flex-end"
+                        : "flex-start",
+                  }}
+                >
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      padding: 1,
+                      backgroundColor:
+                        message.senderId === user.userId
+                          ? "primary.main"
+                          : "white",
+                      color:
+                        message.senderId === user.userId ? "white" : "black",
+                      borderRadius: 2,
+                      maxWidth: "60%",
+                      wordWrap: "break-word",
+                    }}
+                  >
+                    <div>{message.content}</div>
+                    {getMediaType(message.media) === "image" && (
+                      <img
+                        src={message.media}
+                        alt=""
+                        width={"100%"}
+                        style={{
+                          marginTop: 8,
+                          borderRadius: 4,
+                        }}
+                      />
+                    )}
+                    {getMediaType(message.media) === "video" && (
+                      <video
+                        width="100%"
+                        height="240"
+                        controls
+                        style={{ marginTop: 8, borderRadius: 4 }}
+                      >
+                        <source src={message.media} type="video/mp4" />
+                      </video>
+                    )}
+                  </Paper>
+                </Box>
+              ))}
+          </Paper>
+
+          <Paper
+            className="d-flex align-items-center p-2"
+            sx={{
+              mt: 1,
+              display: "flex",
+              justifyContent: "space-between",
+              borderRadius: 2,
+            }}
+          >
+            <InputBase
+              placeholder="Tin nhắn..."
               value={message}
               onKeyUp={(e) => {
-                console.log(e.key);
-                if (e.key == "Enter" || e.key == 13) {
-                  tab === "CHATROOM" ? sendMessage() : sendPrivate();
+                if (e.key === "Enter") {
+                  sendMessage();
                 }
               }}
-              style={{
-                flexGrow: 1,
-                borderRight: "none",
-                borderTopLeftRadius: "10px",
-                borderBottomLeftRadius: "10px",
-              }}
               onChange={(e) => setMessage(e.target.value)}
-            />
-            <label
-              htmlFor="file"
-              className="btn bg-dark text-light"
-              style={{
-                borderTopLeftRadius: "0px",
-                borderBottomLeftRadius: "0px",
+              sx={{
+                flexGrow: 1,
+                ml: 1,
+                padding: 1,
+                backgroundColor: "rgba(255, 255, 255, 0.7)",
+                borderRadius: 2,
               }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                className="bi bi-paperclip"
-                viewBox="0 0 16 16"
+            />
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <IconButton color="primary" component="label">
+                <AttachFileIcon />
+                <input
+                  type="file"
+                  hidden
+                  onChange={base64ConversionForImages}
+                />
+              </IconButton>
+              <Button
+                variant="contained"
+                color="primary"
+                endIcon={<SendIcon />}
+                onClick={sendMessage}
+                sx={{ marginLeft: 2 }}
               >
-                <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z" />
-              </svg>
-            </label>
-            <input
-              id="file"
-              type="file"
-              onChange={(e) => base64ConversionForImages(e)}
-              className="d-none"
-            />
-
-            <input
-              type="button"
-              className="btn btn-dark text-light"
-              value={"Send"}
-              onClick={tab === "CHATROOM" ? sendMessage : sendPrivate}
-              style={{ marginLeft: "10px" }}
-            />
-            <input
-              type="button"
-              className="btn btn-dark text-light"
-              value={"Logout"}
-              onClick={handleLogout}
-              style={{ marginLeft: "10px" }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+                Gửi
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleLogout}
+                sx={{ ml: 1 }}
+              >
+                Logout
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
+    </Box>
   );
 };
