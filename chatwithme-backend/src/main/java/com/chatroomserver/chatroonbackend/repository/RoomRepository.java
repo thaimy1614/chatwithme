@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface RoomRepository extends MongoRepository<Room, String> {
     Page<Room> findByMembersContaining(String userId, Pageable pageable);
 
-    Optional<Room> findByMembersContainingAndGroup(List<String> members, boolean group);
+    Optional<Room> findByMembersEqualsAndGroup(List<String> members, boolean group);
 
 }

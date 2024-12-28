@@ -40,7 +40,7 @@ public class RoomServiceImpl implements RoomService{
         List<String> members = Arrays.asList(userId1, userId2);
         members.sort(String::compareTo);
 
-        Optional<Room> existingChatRoom = roomRepository.findByMembersContainingAndGroup(members, false);
+        Optional<Room> existingChatRoom = roomRepository.findByMembersEqualsAndGroup(members, false);
 
         return existingChatRoom.orElseGet(() -> {
             Room chatRoom = Room.builder()
