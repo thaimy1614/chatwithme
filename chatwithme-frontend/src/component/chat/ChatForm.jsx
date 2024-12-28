@@ -9,6 +9,7 @@ export default function ChatForm(props) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const scrollRef = useRef();
+  const emojiPickerRef = useRef();
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView();
@@ -27,25 +28,36 @@ export default function ChatForm(props) {
   };
 
   return (
-    <div ref={scrollRef}>
+    <div ref={scrollRef} className="position-relative">
       {showEmojiPicker && (
-        <Picker
-          groupNames={{
-            smileys_people: "Mặt cười",
-            animals_nature: "Động vật & Thiên nhiên",
-            food_drink: "Đồ ăn & Thức uống",
-            travel_places: "Du lịch & Địa điểm",
-            activities: "Hoạt động",
-            objects: "Đồ vật",
-            symbols: "Biểu tượng",
-            flags: "Cờ",
-            recently_used: "Đã dùng gần đây",
+        <div
+          className="position-absolute z-index-1050"
+          style={{
+            bottom: "60px", 
+            left: "20px",
+            width: "100%",
+            zIndex: 9999,
           }}
-          className="dark:bg-gray-900"
-          onEmojiClick={handleEmojiClick}
-        />
+        >
+          <Picker
+            groupNames={{
+              smileys_people: "Mặt cười",
+              animals_nature: "Động vật & Thiên nhiên",
+              food_drink: "Đồ ăn & Thức uống",
+              travel_places: "Du lịch & Địa điểm",
+              activities: "Hoạt động",
+              objects: "Đồ vật",
+              symbols: "Biểu tượng",
+              flags: "Cờ",
+              recently_used: "Đã dùng gần đây",
+            }}
+            onEmojiClick={handleEmojiClick}
+          />
+        </div>
       )}
-      <form onSubmit={handleFormSubmit}>
+      <form onSubmit={handleFormSubmit} onKeyUp={(e) => {
+              if (e.key === "Enter" || e.key == 13) handleFormSubmit();
+            }}>
         <div className="flex items-center justify-between w-full p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
           <button
             onClick={(e) => {
