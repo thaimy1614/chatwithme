@@ -19,7 +19,9 @@ export const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [messageType, setMessageType] = useState(false);
-  const [failMessage, setFailMessage] = useState("INCORRECT USERNAME OR PASSWORD!");
+  const [failMessage, setFailMessage] = useState(
+    "INCORRECT USERNAME OR PASSWORD!"
+  );
   const [successMessage, setSuccessMessage] = useState(""); // Add success message state
 
   useEffect(() => {
@@ -50,7 +52,9 @@ export const Signup = () => {
       const data = await response.data;
       if (data.code === 1000) {
         setMessageType(true);
-        setSuccessMessage("Đăng ký thành công, vui lòng kiểm tra email để xác thực tài khoản!");
+        setSuccessMessage(
+          "Đăng ký thành công, vui lòng kiểm tra email để xác thực tài khoản!"
+        );
         setModalOpen(true);
       } else {
         setMessageType(false);
@@ -114,14 +118,17 @@ export const Signup = () => {
                 required
               />
               <TextField
+                slotProps={{ input: { maxLength: 30 } }}
                 label="Pháp danh của bạn..."
                 variant="outlined"
                 fullWidth
                 margin="normal"
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {if (e.target.value.length <= 30) {
+                  setFullName(e.target.value);
+                }}}
                 required
                 onKeyUp={(e) => {
-                  if (e.key === "Enter") handleSignup();
+                  if (e.key === "Enter" || e.key == 13) handleSignup();
                 }}
               />
               <Button
