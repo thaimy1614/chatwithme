@@ -2,31 +2,33 @@ import { LogoutIcon } from "@heroicons/react/outline";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ThemeToggler from "./ThemeToggler";
-import { getUserInfo, removeToken, removeUserInfo } from "../../services/localStorageService";
+import {
+  getUserInfo,
+  removeToken,
+  removeUserInfo,
+} from "../../services/localStorageService";
+import SearchPopup from "./SearchPopup";
+import { useUser } from "../../context/UserContext";
 
 export default function Header() {
-  const [modal, setModal] = useState(false);
-
   const [avatar, setAvatar] = useState("/assets/images/logo.png");
-
-  const currentUser = JSON.parse(getUserInfo());
+  
+  const { currentUser, setCurrentUser } = useUser();
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const currentUser = JSON.parse(getUserInfo());
-
-    if (!currentUser) {
-      navigate("/login");
+    if (currentUser?.photoURL) {
+      setAvatar(currentUser.photoURL);
     }
-    if (currentUser && currentUser.photoURL) setAvatar(currentUser.photoURL);
   }, [currentUser]);
 
   const handleLogout = () => {
     removeToken();
     removeUserInfo();
-    navigate("/login")
-  }
+    setCurrentUser(null);
+    navigate("/login");
+  };
 
   return (
     <>
