@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateAvatar } from "../../utils/GenerateAvatar";
-import { getUserInfo, setUserInfo } from "../../services/localStorageService";
 import { updateMyInfo } from "../../services/ChatService";
+import { useUser } from "../../context/UserContext";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -10,14 +10,15 @@ function classNames(...classes) {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { currentUser, setCurrentUser } = useUser();
 
   const [avatars, setAvatars] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState();
-  
-  const currentUser = JSON.parse(getUserInfo());
-  const [selectedAvatar, setSelectedAvatar] = useState(currentUser.photoURL?currentUser.photoURL:"");
-  const [fullName, setFullName] = useState(currentUser.fullName);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [selectedAvatar, setSelectedAvatar] = useState(
+    currentUser?.photoURL || ""
+  );
+  const [fullName, setFullName] = useState(currentUser?.fullName || "");
 
   useEffect(() => {
     const fetchData = () => {
@@ -33,17 +34,17 @@ export default function Profile() {
 
     try {
       setLoading(true);
-      const user = currentUser;
       const profile = {
-        fullName: fullName,
+        fullName,
         photoURL: selectedAvatar,
         userId: currentUser.userId,
       };
       const res = await updateMyInfo(profile);
-      setUserInfo(JSON.stringify(profile))
-      window.location.href="/";
+      
+      setCurrentUser(profile);
+      navigate("/");
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
 
     setLoading(false);
@@ -66,7 +67,7 @@ export default function Profile() {
                     alt="gallery"
                     className={classNames(
                       index === selectedIndex
-                        ? "border-4  border-blue-700 dark:border-blue-700"
+                        ? "border-4 border-blue-700 dark:border-blue-700"
                         : "cursor-pointer hover:border-4 hover:border-blue-700",
                       "block object-cover object-center w-36 h-36 rounded-full"
                     )}
@@ -90,7 +91,7 @@ export default function Profile() {
               required
               className="appearance-none rounded-none relative block w-full px-3 py-2 placeholder-gray-500 rounded-t-md bg-gray-50 border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="Nhập pháp danh"
-              defaultValue={currentUser.fullName && currentUser.fullName}
+              value={fullName}
               onInvalid={(e) =>
                 e.target.setCustomValidity("Nhập pháp danh của mi vào")
               }
