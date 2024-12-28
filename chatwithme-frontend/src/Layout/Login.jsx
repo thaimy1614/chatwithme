@@ -10,6 +10,7 @@ import {
 import Loading from "../component/common/loading";
 import MessageModal from "../component/common/message-modal";
 import axios from "axios";
+import { useUser } from "../context/UserContext";
 
 export const fetchUserInfo = async () => {
   try {
@@ -53,11 +54,13 @@ export const Login = () => {
     "INCORRECT USERNAME OR PASSWORD!"
   );
 
+  const { setCurrentUser } = useUser();
+
   useEffect(() => {
     const accessToken = getToken();
 
     if (accessToken) {
-      navigate("/chat");
+      navigate("/");
     }
   }, [navigate]);
 
@@ -92,8 +95,10 @@ export const Login = () => {
       const userInfo = await fetchUserInfo();
 
       if (userInfo) {
-        navigate("/chat");
+        setCurrentUser(userInfo);
+        navigate("/");
       } else {
+        setCurrentUser(null);
         console.error("Failed to retrieve user info.");
         setFailMessage("Hệ thống sập rồi!!!");
         setModalOpen(true);
@@ -152,7 +157,7 @@ export const Login = () => {
                 margin="normal"
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyUp={(e) => {
-                  if (e.key === "Enter") handleLogin();
+                  if (e.key === "Enter" || e.key == 13) handleLogin();
                 }}
                 required
               />
