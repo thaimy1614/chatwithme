@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
+  createPrivateChatRoom,
   getAllUsers,
   getMyRooms,
 } from "../../services/ChatService";
@@ -10,6 +11,7 @@ import Welcome from "../chat/Welcome";
 import AllUsers from "../chat/AllUsers";
 import SearchUsers from "../chat/SearchUsers";
 import { getUserInfo } from "../../services/localStorageService";
+import SearchPopup from "./SearchPopup";
 
 export default function ChatLayout() {
   const [users, SetUsers] = useState([]);
@@ -107,12 +109,36 @@ export default function ChatLayout() {
       setFilteredUsers(searchedUsers);
     }
   };
+  const [modal, setModal] = useState(false);
+  const handleShowSearchPopup = () => {
+    setModal(true);
+
+  }
+
+  const openChatRoom = async (userId) => {
+    if(userId === currentUser.userId) return;
+    // if (chatRooms.length !== 0) {
+    //   const res = chatRooms.find((room) => {
+    //     return room.members.includes(userId);
+    //   });
+
+    //   if (res) {
+    //     setCurrentChat(res);
+    //     return;
+    //   }
+    // }
+    const res = await createPrivateChatRoom(userId);
+    const isRoomExist = chatRooms.some(room => room.roomId === res.roomId);
+    if(!isRoomExist) setChatRooms([...chatRooms, res]);
+    setCurrentChat(res);
+    setModal(false);
+  };
 
   return (
     <div className="container mx-auto">
       <div className="min-w-full bg-white border-x border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded lg:grid lg:grid-cols-3">
         <div className="bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 lg:col-span-1">
-          <SearchUsers handleSearch={handleSearch} />
+          <SearchUsers handleSearch={handleSearch} handleShowSearchPopup={handleShowSearchPopup}/>
 
           <AllUsers
             users={searchQuery !== "" ? filteredUsers : users}
@@ -134,6 +160,7 @@ export default function ChatLayout() {
           <Welcome />
         )}
       </div>
+      <SearchPopup currentUser={currentUser} show={modal} handleClose={() => setModal(false)} openChatRoom={openChatRoom} />
     </div>
   );
 }
