@@ -133,7 +133,7 @@ export const createPrivateChatRoom = async (userId) => {
   const header = await createHeader();
   
   try {
-    const res = await axios.post(`/room/private?userId2=${userId}`, header);
+    const res = await axios.post(`/room/private?userId2=${userId}`, {}, header);
     return res.data.result;
   } catch (e) {
     console.error(e);
@@ -158,7 +158,6 @@ export const getMessagesOfChatRoom = async (chatRoomId) => {
     const messages = res.data.result.content.sort((a, b) =>
       new Date(a.createdAt) - new Date(b.createdAt)
     );
-    console.log(messages)
     return messages;
   } catch (e) {
     console.error(e);
@@ -186,3 +185,14 @@ export const updateMyInfo = async (info) => {
     console.error(e);
   }
 };
+
+export const searchUsers = async (searchTerm, page, size) => {
+  const header = await createHeader();
+
+  try {
+    const res = await axios.get(`/user/search?key=${searchTerm}&page=${page}&size=${size}`, header);
+    return res.data.result.content;
+  } catch (e) {
+    console.error(e);
+  }
+}
