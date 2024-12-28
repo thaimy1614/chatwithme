@@ -1,9 +1,11 @@
-import { SearchIcon } from "@heroicons/react/solid";
+import { PlusIcon, SearchIcon } from "@heroicons/react/solid";
 
-export default function SearchUsers({ handleSearch }) {
+export default function SearchUsers({ handleSearch, handleShowSearchPopup }) {
   return (
     <div className="mx-3 my-3">
       <div className="relative">
+        <span className="h-10 flex items-center">
+
         <div className="absolute inset-y-0 left-0 pl-2 flex items-center">
           <SearchIcon
             className="h-5 w-5 text-gray-500 dark:text-gray-400"
@@ -18,7 +20,16 @@ export default function SearchUsers({ handleSearch }) {
           type="search"
           onChange={(e) => handleSearch(e.target.value)}
         />
+      <button
+        className="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5"
+        onClick={() => handleShowSearchPopup()}
+      >
+        <PlusIcon className="h-5 w-5" aria-hidden="true" />
+      </button>
+      </span>
+
       </div>
+
     </div>
   );
 }
