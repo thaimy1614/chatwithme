@@ -51,7 +51,7 @@ export default function ChatLayout() {
     };
 
     fetchData();
-  }, [currentUser.userId]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,6 +132,23 @@ export default function ChatLayout() {
     setModal(false);
   };
 
+  const handleChatRoomChange = (roomId, updatedFields) => {
+    console.log(roomId)
+    console.log(updatedFields)
+    setChatRooms((prevRooms) => {
+      const updatedRooms = prevRooms.map((room) =>
+        room.roomId === roomId ? { ...room, ...updatedFields } : room
+      );
+  
+      // Đưa phần tử đã cập nhật lên đầu danh sách
+      const updatedRoom = updatedRooms.find((room) => room.roomId === roomId);
+      const filteredRooms = updatedRooms.filter((room) => room.roomId !== roomId);
+      console.log(updatedRoom)
+  
+      return [updatedRoom, ...filteredRooms];
+    });
+  };
+
   return (
     <div className="container mx-auto">
       <div className="min-w-full bg-white border-x border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded lg:grid lg:grid-cols-3">
@@ -153,6 +170,7 @@ export default function ChatLayout() {
             currentChat={currentChat}
             currentUser={currentUser}
             socket={socket}
+            handleChatRoomChange={handleChatRoomChange}
           />
         ) : (
           <Welcome />
