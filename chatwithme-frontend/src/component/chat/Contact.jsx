@@ -4,11 +4,25 @@ import { getUser } from "../../services/ChatService";
 import UserLayout from "../layouts/UserLayout";
 
 export default function Contact({ chatRoom, onlineUsersId, currentUser }) {
-  const [contact, setContact] = useState("");
+  const [contact, setContact] = useState({
+    lastMessage: {
+      content: "",
+      senderName: "",
+      roomId: "",
+    },
+    fullName: "",
+    photoURL: "",
+  });
 
   useEffect(() => {
     if (chatRoom.group) {
-      setContact(chatRoom.name);
+      setContact({
+        group: true,
+        fullName: chatRoom.name,
+        photoURL: "/assets/images/logo.png",
+        lastMessage: chatRoom.lastMessage?chatRoom.lastMessage:null,
+        lastModifiedAt: chatRoom.lastModifiedAt,
+      });
     } else {
       const contactId = chatRoom.members?.find(
         (member) => member !== currentUser.userId
@@ -16,7 +30,13 @@ export default function Contact({ chatRoom, onlineUsersId, currentUser }) {
 
       const fetchData = async () => {
         const res = await getUser(contactId);
-        setContact(res.fullName);
+        setContact({
+          group: false,
+          fullName: res.fullName,
+          photoURL: res.photoURL,
+          lastMessage: chatRoom.lastMessage?chatRoom.lastMessage:null,
+          lastModifiedAt: chatRoom.lastModifiedAt,
+        });
       };
 
       fetchData();
