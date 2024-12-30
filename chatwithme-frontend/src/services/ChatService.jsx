@@ -87,7 +87,6 @@ export const getUser = async (userId) => {
 
   try {
     const res = await axios.get(`/user/${userId}`, header);
-    console.log(res.data.result)
     return res.data.result;
   } catch (e) {
     console.error(e);

@@ -48,8 +48,6 @@ export default function ChatLayout() {
     const fetchData = async () => {
       const res = await getMyRooms(currentUser.userId);
       setChatRooms(res);
-      console.log(res)
-      console.log(chatRooms)
     };
 
     fetchData();

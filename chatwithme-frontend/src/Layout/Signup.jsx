@@ -48,7 +48,6 @@ export const Signup = () => {
         },
       });
       setLoading(false);
-      console.log(response);
       const data = await response.data;
       if (data.code === 1000) {
         setMessageType(true);

@@ -46,7 +46,6 @@ export const ChatPage2 = () => {
         },
       });
       const data = await response.data;
-      console.log(data);
       setRooms(data.result.content);
       return data.result.content;
     } catch (error) {
@@ -62,7 +61,6 @@ export const ChatPage2 = () => {
         },
       });
       const data = await response.data;
-      console.log(data);
       setMessages(data.result.content);
       return data.result;
     } catch (error) {
@@ -78,7 +76,6 @@ export const ChatPage2 = () => {
         },
       });
       const data = await response.data;
-      console.log(data);
       setRoomInfo(data.result);
       return data.result;
     } catch (error) {

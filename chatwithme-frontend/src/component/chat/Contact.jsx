@@ -7,7 +7,6 @@ export default function Contact({ chatRoom, onlineUsersId, currentUser }) {
   const [contact, setContact] = useState("");
 
   useEffect(() => {
-    console.log(chatRoom);
     if (chatRoom.group) {
       setContact(chatRoom.name);
     } else {
