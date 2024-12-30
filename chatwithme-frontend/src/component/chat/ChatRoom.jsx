@@ -6,7 +6,7 @@ import Message from "./Message";
 import Contact from "./Contact";
 import ChatForm from "./ChatForm";
 
-export default function ChatRoom({ currentChat, currentUser, socket }) {
+export default function ChatRoom({ currentChat, currentUser, socket, handleChatRoomChange }) {
   const [messages, setMessages] = useState([]);
   const [incomingMessage, setIncomingMessage] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -15,6 +15,7 @@ export default function ChatRoom({ currentChat, currentUser, socket }) {
   useEffect(()=> {
     subscribeToTopic(`/user/${currentUser.userId}/chat`, (message)=>{
       setMessages((prevMessages) => [...prevMessages, message]);
+      handleChatRoomChange(message.roomId, {lastMessage: message, lastModifiedAt: message.createdAt});
     });
   }, [])
 
@@ -48,10 +49,12 @@ export default function ChatRoom({ currentChat, currentUser, socket }) {
     
     const messageToSave = {
       content: message,
+      senderName: currentUser.fullName,
       senderId: currentUser.userId,
       createdAt: new Date(),
     };
     setMessages((prev) => [...prev, messageToSave]);
+    handleChatRoomChange(currentChat.roomId, {lastMessage: messageToSave, lastModifiedAt: messageToSave.createdAt});
   };
 
   return (
