@@ -35,6 +35,10 @@ public class ChatServiceImpl implements ChatService {
         message.setMedia("");
         // TODO: store media in aws s3 then return a link
         messageRepository.save(message);
+
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
+        room.setLastMessage(message);
+        roomRepository.save(room);
     }
 
 
