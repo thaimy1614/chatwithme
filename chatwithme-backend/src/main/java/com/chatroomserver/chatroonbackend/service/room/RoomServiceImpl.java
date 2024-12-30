@@ -24,7 +24,7 @@ public class RoomServiceImpl implements RoomService{
     private final RoomMapper roomMapper;
 
     public Page<Room> getMyRooms(String userId, int page, int size) {
-        return roomRepository.findByMembersContaining(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "lastMessageTime")));
+        return roomRepository.findByMembersContainingOrderByLastModifiedAtDesc(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "lastMessageTime")));
     }
 
     public Room getRoomInfo(String userId, String roomId) {
