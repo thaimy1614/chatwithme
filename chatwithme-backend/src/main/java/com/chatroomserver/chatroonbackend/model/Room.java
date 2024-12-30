@@ -2,6 +2,7 @@ package com.chatroomserver.chatroonbackend.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,9 @@ public class Room {
     private boolean group;
     private List<String> members;
     private String createdBy;
+    private Message lastMessage;
     private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime lastMessageTime;
+    @LastModifiedDate
+    private LocalDateTime lastModifiedAt;
 }
 
