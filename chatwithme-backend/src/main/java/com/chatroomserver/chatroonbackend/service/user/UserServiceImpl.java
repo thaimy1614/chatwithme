@@ -127,11 +127,11 @@ public class UserServiceImpl implements UserService {
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
         var verified = signedJWT.verify(verifier);
         if (!(verified && expiryTime.after(new Date()))) {
-            throw new Exception("UNAUTHENTICATED");
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
         if (isTokenInBlacklist(signedJWT.getJWTClaimsSet().getJWTID())) {
-            throw new Exception("UNAUTHENTICATED");
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         return signedJWT;
     }
