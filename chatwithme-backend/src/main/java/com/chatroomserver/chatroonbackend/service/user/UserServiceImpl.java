@@ -1,10 +1,8 @@
 package com.chatroomserver.chatroonbackend.service.user;
 
-import com.chatroomserver.chatroonbackend.dto.request.ExchangeTokenRequest;
-import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
-import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
-import com.chatroomserver.chatroonbackend.dto.request.UserRequest;
+import com.chatroomserver.chatroonbackend.dto.request.*;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
+import com.chatroomserver.chatroonbackend.dto.response.RefreshTokenResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
 import com.chatroomserver.chatroonbackend.exception.AppException;
@@ -29,6 +27,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -120,7 +119,7 @@ public class UserServiceImpl implements UserService {
         return jwsObject.serialize();
     }
 
-    private SignedJWT verifyToken(String token, boolean isRefresh) throws Exception {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(KEY.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
         Date expiryTime = (isRefresh) ? new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(Long.parseLong(REFRESHABLE_DURATION), ChronoUnit.SECONDS).toEpochMilli())
@@ -148,6 +147,21 @@ public class UserServiceImpl implements UserService {
 
     private boolean isTokenInBlacklist(String jwtId) {
         return redisTemplate.opsForValue().get("bl_" + jwtId) != null;
+    }
+
+    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getToken(), true);
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        addTokenToBlacklist(jit, expiryTime);
+
+        var userId = signedJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return RefreshTokenResponse.builder()
+                .token(generateToken(user))
+                .build();
     }
 
     public SignupResponse signup(SignupRequest request) {

@@ -1,11 +1,9 @@
 package com.chatroomserver.chatroonbackend.controller;
 
 import com.chatroomserver.chatroonbackend.dto.ApiResponse;
-import com.chatroomserver.chatroonbackend.dto.request.LoginRequest;
-import com.chatroomserver.chatroonbackend.dto.request.LogoutRequest;
-import com.chatroomserver.chatroonbackend.dto.request.SignupRequest;
-import com.chatroomserver.chatroonbackend.dto.request.UserRequest;
+import com.chatroomserver.chatroonbackend.dto.request.*;
 import com.chatroomserver.chatroonbackend.dto.response.LoginResponse;
+import com.chatroomserver.chatroonbackend.dto.response.RefreshTokenResponse;
 import com.chatroomserver.chatroonbackend.dto.response.SignupResponse;
 import com.chatroomserver.chatroonbackend.dto.response.UserResponse;
 import com.chatroomserver.chatroonbackend.service.user.UserService;
@@ -102,13 +100,21 @@ public class UserController {
                     @RequestParam String key
             ) {
         Pageable pageable = PageRequest.of(page, size);
-        if(key == null || key.isEmpty()) {
+        if (key == null || key.isEmpty()) {
             return null;
         }
         Page<UserResponse> res = userService.searchUsers(key, pageable);
 
         return ApiResponse.<Page<UserResponse>>builder()
                 .result(res)
+                .build();
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) throws Exception {
+        RefreshTokenResponse response = userService.refreshToken(request);
+        return ApiResponse.<RefreshTokenResponse>builder()
+                .result(response)
                 .build();
     }
 

@@ -1,4 +1,4 @@
-package com.begin.bg.dto.request;
+package com.chatroomserver.chatroonbackend.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

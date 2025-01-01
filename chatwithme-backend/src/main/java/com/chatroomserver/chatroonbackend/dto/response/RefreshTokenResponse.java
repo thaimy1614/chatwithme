@@ -1,4 +1,4 @@
-package com.chatroomserver.chatroonbackend.dto.request;
+package com.chatroomserver.chatroonbackend.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenRequest {
+public class RefreshTokenResponse {
     private String token;
 }

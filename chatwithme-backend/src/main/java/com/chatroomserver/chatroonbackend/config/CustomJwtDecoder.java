@@ -1,9 +1,12 @@
 package com.chatroomserver.chatroonbackend.config;
 
+import com.chatroomserver.chatroonbackend.exception.AppException;
+import com.chatroomserver.chatroonbackend.exception.ErrorCode;
 import com.chatroomserver.chatroonbackend.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -29,7 +32,7 @@ public class CustomJwtDecoder implements JwtDecoder {
             log.info("Jwt token: {}", token);
             var response = userService.introspect(token);
             if (!response) {
-                throw new JwtException("Token invalid");
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
