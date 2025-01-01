@@ -22,8 +22,8 @@ outbound:
 
 jwt:
   signer-key: ${JWT_SIGNING_KEY}
-  expiration-duration: 360000 # in sec
-  refreshable-duration: 360000 # in sec
+  expiration-duration: ${JWT_EXPIRATION_DURATION} # in sec
+  refreshable-duration: ${JWT_REFRESHABLE_DURATION} # in sec
 
 server:
   port: 8080
