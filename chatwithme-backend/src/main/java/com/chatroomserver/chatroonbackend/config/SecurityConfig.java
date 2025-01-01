@@ -21,9 +21,18 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
     private final CustomJwtDecoder customJwtDecoder;
 
+    private final String[] publicEndpoints = {
+            "/api/user/login",
+            "/api/user/signup",
+            "/api/user/outbound/authentication",
+            "/ws",
+            "/ws/**",
+            "/api/user/refresh"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/**").permitAll().anyRequest().permitAll());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(publicEndpoints).permitAll().anyRequest().authenticated());
         http.oauth2ResourceServer(
                 oauth2 ->
                         oauth2.jwt(
