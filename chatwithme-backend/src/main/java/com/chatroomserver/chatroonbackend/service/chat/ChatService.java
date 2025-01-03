@@ -1,6 +1,5 @@
 package com.chatroomserver.chatroonbackend.service.chat;
 
-import com.chatroomserver.chatroonbackend.dto.ChatMessage;
 import com.chatroomserver.chatroonbackend.model.Message;
 
 public interface ChatService {

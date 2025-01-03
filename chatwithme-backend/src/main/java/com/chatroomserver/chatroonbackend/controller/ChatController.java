@@ -1,6 +1,5 @@
 package com.chatroomserver.chatroonbackend.controller;
 
-import com.chatroomserver.chatroonbackend.dto.ChatMessage;
 import com.chatroomserver.chatroonbackend.model.Message;
 import com.chatroomserver.chatroonbackend.service.chat.ChatService;
 import com.chatroomserver.chatroonbackend.service.room.RoomService;
@@ -29,7 +28,7 @@ public class ChatController {
             chatService.saveMessage(roomId, message);
             chatService.sendMessage(roomId, message);
         } else {
-            messagingTemplate.convertAndSendToUser(message.getSenderId(),"/chat", new ErrorMessage(new Throwable("Bạn không có quyền gửi!")));
+            messagingTemplate.convertAndSendToUser(message.getSenderId(), "/chat", new ErrorMessage(new Throwable("Bạn không có quyền gửi!")));
         }
     }
 

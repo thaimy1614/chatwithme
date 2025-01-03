@@ -205,7 +205,7 @@ public class UserServiceImpl implements UserService {
 
         var user = userRepository.findByEmail(userInfo.getEmail()).orElseGet(
                 () -> {
-                    return userRepository.<User>save(User.builder()
+                    return userRepository.save(User.builder()
                             .email(userInfo.getEmail())
                             .fullName(userInfo.getGivenName() + userInfo.getFamilyName())
                             .build());

@@ -1,6 +1,5 @@
 package com.chatroomserver.chatroonbackend.service.chat;
 
-import com.chatroomserver.chatroonbackend.dto.ChatMessage;
 import com.chatroomserver.chatroonbackend.exception.AppException;
 import com.chatroomserver.chatroonbackend.exception.ErrorCode;
 import com.chatroomserver.chatroonbackend.mapper.MessageMapper;
@@ -11,12 +10,9 @@ import com.chatroomserver.chatroonbackend.repository.RoomRepository;
 import com.chatroomserver.chatroonbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -42,15 +38,14 @@ public class ChatServiceImpl implements ChatService {
     }
 
 
-
     @Override
     public void sendMessage(String roomId, Message message) {
         Room room = roomRepository.findById(roomId).orElseThrow(
                 () -> new AppException(ErrorCode.ROOM_NOT_FOUND)
         );
         room.getMembers().forEach(member -> {
-            if(!member.equals(message.getSenderId())){
-                log.info("send to" +member);
+            if (!member.equals(message.getSenderId())) {
+                log.info("send to" + member);
                 simpMessagingTemplate.convertAndSendToUser(member, "/chat", message);
             }
         });

@@ -32,8 +32,8 @@ public class RoomController {
     @GetMapping("/{roomId}")
     ApiResponse<Room> getMyRooms(
             @PathVariable String roomId,
-                    JwtAuthenticationToken token
-            ) {
+            JwtAuthenticationToken token
+    ) {
         String userId = token.getName();
         Room response = roomService.getRoomInfo(userId, roomId);
         return ApiResponse.<Room>builder()

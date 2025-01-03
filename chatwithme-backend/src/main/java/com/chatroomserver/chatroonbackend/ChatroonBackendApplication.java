@@ -10,8 +10,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 public class ChatroonBackendApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ChatroonBackendApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ChatroonBackendApplication.class, args);
+    }
 
 }

@@ -2,7 +2,6 @@ package com.chatroomserver.chatroonbackend.controller;
 
 
 import com.chatroomserver.chatroonbackend.dto.ApiResponse;
-import com.chatroomserver.chatroonbackend.dto.response.MessageResponse;
 import com.chatroomserver.chatroonbackend.model.Message;
 import com.chatroomserver.chatroonbackend.service.message.MessageService;
 import lombok.RequiredArgsConstructor;

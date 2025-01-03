@@ -4,8 +4,6 @@ import com.chatroomserver.chatroonbackend.dto.request.RoomCreationRequest;
 import com.chatroomserver.chatroonbackend.model.Room;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 public interface RoomService {
     Page<Room> getMyRooms(String userId, int page, int size);
 

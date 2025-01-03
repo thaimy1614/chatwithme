@@ -1,5 +1,13 @@
-version: '3.8'
 services:
+  server:
+    container_name: thaimy1614/harmonytime:latest
+    build:
+      context: .
+    env_file:
+      - path: .env
+    restart: on-failure
+    ports:
+      - 8080:8080
   mongodb:
     image: mongo:jammy
     container_name: chat_app
@@ -24,3 +32,6 @@ services:
 volumes:
   chat-data:
   redis-data:
+
+
+

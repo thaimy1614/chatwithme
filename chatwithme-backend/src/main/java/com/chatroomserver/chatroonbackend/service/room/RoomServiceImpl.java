@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RoomServiceImpl implements RoomService{
+public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final RoomMapper roomMapper;
 
@@ -74,9 +74,6 @@ public class RoomServiceImpl implements RoomService{
         Room room = roomRepository.findById(roomId).orElseThrow(
                 () -> new AppException(ErrorCode.ROOM_NOT_FOUND)
         );
-        if(!room.getMembers().contains(userId)) {
-            return false;
-        }
-        return true;
+        return room.getMembers().contains(userId);
     }
 }

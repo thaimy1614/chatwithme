@@ -20,11 +20,7 @@ import org.springframework.web.filter.CorsFilter;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    @Value("${application.frontend.url}")
-    private String frontendUrl;
-
     private final CustomJwtDecoder customJwtDecoder;
-
     private final String[] publicEndpoints = {
             "/api/user/login",
             "/api/user/signup",
@@ -33,6 +29,8 @@ public class SecurityConfig {
             "/ws/**",
             "/api/user/refresh"
     };
+    @Value("${application.frontend.url}")
+    private String frontendUrl;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
