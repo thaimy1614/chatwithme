@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("${application.api.prefix}/payment")
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentController {
