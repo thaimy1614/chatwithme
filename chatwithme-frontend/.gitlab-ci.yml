@@ -1,0 +1,36 @@
+image: node:20-alpine
+
+stages:
+  - install
+  - build
+  - deploy
+
+variables:
+  BUILD_DIR: $REACT_APP_BUILD_DIR
+
+install_dependencies:
+  stage: install
+  script:
+    - npm install
+  artifacts:
+    paths:
+      - node_modules/
+
+build_app:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - $BUILD_DIR/
+    expire_in: 1 week
+
+deploy_to_s3:
+  stage: deploy
+  image: 
+    name: amazon/aws-cli
+    entrypoint: [""]
+  script:
+    - aws s3 sync $CI_PROJECT_DIR/$BUILD_DIR s3://$AWS_BUCKET_NAME --region $AWS_REGION --delete
+  only:
+    - main
