@@ -7,6 +7,9 @@ stages:
 
 variables:
   BUILD_DIR: $REACT_APP_BUILD_DIR
+  VITE_API_PREFIX: $VITE_API_PREFIX
+  VITE_API_HOST_PORT: $VITE_API_HOST_PORT
+  VITE_FRONTEND_PREFIX: $VITE_FRONTEND_PREFIX
 
 install_dependencies:
   stage: install
@@ -32,5 +35,6 @@ deploy_to_s3:
     entrypoint: [""]
   script:
     - aws s3 sync $CI_PROJECT_DIR/$BUILD_DIR s3://$AWS_BUCKET_NAME --region $AWS_REGION --delete
+    - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
   only:
     - main
