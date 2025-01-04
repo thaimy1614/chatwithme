@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
+  connectWebsocket,
   createPrivateChatRoom,
   getAllUsers,
   getMyRooms,
+  subscribeToTopic,
 } from "../../services/ChatService";
 
 import ChatRoom from "../chat/ChatRoom";
@@ -19,7 +21,7 @@ export default function ChatLayout() {
   const [chatRooms, setChatRooms] = useState([]);
   const [filteredRooms, setFilteredRooms] = useState([]);
 
-  const [currentChat, setCurrentChat] = useState();
+  const [currentChat, setCurrentChat] = useState(null);
   const [onlineUsersId, setonlineUsersId] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -30,18 +32,18 @@ export default function ChatLayout() {
   const currentUser = JSON.parse(getUserInfo());
 
   // useEffect(() => {
-    // const getSocket = async () => {
-    //   const res = await initiateSocketConnection();
-    //   socket.current = res;
-    //   socket.current.emit("addUser", currentUser.userId);
-    //   socket.current.on("getUsers", (users) => {
-    //     const userId = users.map((u) => u[0]);
-    //     setonlineUsersId(userId);
-    //   });
-    // };
+  // const getSocket = async () => {
+  //   const res = await initiateSocketConnection();
+  //   socket.current = res;
+  //   socket.current.emit("addUser", currentUser.userId);
+  //   socket.current.on("getUsers", (users) => {
+  //     const userId = users.map((u) => u[0]);
+  //     setonlineUsersId(userId);
+  //   });
+  // };
 
-    // getSocket();
-    
+  // getSocket();
+
   // }, []);
 
   useEffect(() => {
@@ -79,13 +81,21 @@ export default function ChatLayout() {
     setCurrentChat(chat);
   };
 
+  useEffect(() => {
+    subscribeToTopic(`/user/${currentUser.userId}/chat`, (message) => {
+      handleChatRoomChange(message.roomId, {
+        lastMessage: message,
+        lastModifiedAt: message.createdAt,
+      });
+    });
+  }, [currentUser.userId]);
+  
+
   const handleSearch = (newSearchQuery) => {
     setSearchQuery(newSearchQuery);
 
     const searchedUsers = users.filter((user) => {
-      return user.fullName
-        .toLowerCase()
-        .includes(newSearchQuery.toLowerCase());
+      return user.fullName.toLowerCase().includes(newSearchQuery.toLowerCase());
     });
 
     const searchedUsersId = searchedUsers.map((u) => u.userId);
@@ -110,11 +120,10 @@ export default function ChatLayout() {
   const [modal, setModal] = useState(false);
   const handleShowSearchPopup = () => {
     setModal(true);
-
-  }
+  };
 
   const openChatRoom = async (userId) => {
-    if(userId === currentUser.userId) return;
+    if (userId === currentUser.userId) return;
     // if (chatRooms.length !== 0) {
     //   const res = chatRooms.find((room) => {
     //     return room.members.includes(userId);
@@ -126,34 +135,43 @@ export default function ChatLayout() {
     //   }
     // }
     const res = await createPrivateChatRoom(userId);
-    const isRoomExist = chatRooms.some(room => room.roomId === res.roomId);
-    if(!isRoomExist) setChatRooms([...chatRooms, res]);
+    const isRoomExist = chatRooms.some((room) => room.roomId === res.roomId);
+    if (!isRoomExist) setChatRooms([res, ...chatRooms]);
     setCurrentChat(res);
     setModal(false);
   };
 
   const handleChatRoomChange = (roomId, updatedFields) => {
-    console.log(roomId)
-    console.log(updatedFields)
+    console.log(roomId);
+    console.log(updatedFields);
     setChatRooms((prevRooms) => {
       const updatedRooms = prevRooms.map((room) =>
         room.roomId === roomId ? { ...room, ...updatedFields } : room
       );
-  
+
       // Đưa phần tử đã cập nhật lên đầu danh sách
       const updatedRoom = updatedRooms.find((room) => room.roomId === roomId);
-      const filteredRooms = updatedRooms.filter((room) => room.roomId !== roomId);
-      console.log(updatedRoom)
-  
+      const filteredRooms = updatedRooms.filter(
+        (room) => room.roomId !== roomId
+      );
+
       return [updatedRoom, ...filteredRooms];
     });
+    if(currentChat?.roomId === roomId){
+      setCurrentChat((prev) => {
+        return { ...prev, ...updatedFields };
+      });
+    }
   };
 
   return (
     <div className="container mx-auto">
       <div className="min-w-full bg-white border-x border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded lg:grid lg:grid-cols-3">
         <div className="bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 lg:col-span-1">
-          <SearchUsers handleSearch={handleSearch} handleShowSearchPopup={handleShowSearchPopup}/>
+          <SearchUsers
+            handleSearch={handleSearch}
+            handleShowSearchPopup={handleShowSearchPopup}
+          />
 
           <AllUsers
             users={searchQuery !== "" ? filteredUsers : users}
@@ -162,6 +180,7 @@ export default function ChatLayout() {
             onlineUsersId={onlineUsersId}
             currentUser={currentUser}
             changeChat={handleChatChange}
+            currentChat={currentChat}
           />
         </div>
 
@@ -176,7 +195,12 @@ export default function ChatLayout() {
           <Welcome />
         )}
       </div>
-      <SearchPopup currentUser={currentUser} show={modal} handleClose={() => setModal(false)} openChatRoom={openChatRoom} />
+      <SearchPopup
+        currentUser={currentUser}
+        show={modal}
+        handleClose={() => setModal(false)}
+        openChatRoom={openChatRoom}
+      />
     </div>
   );
 }

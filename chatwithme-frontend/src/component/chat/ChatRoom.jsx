@@ -1,23 +1,50 @@
 import { useState, useEffect, useRef } from "react";
 
-import { getMessagesOfChatRoom, sendMessage, subscribeToTopic } from "../../services/ChatService";
+import {
+  getMessagesOfChatRoom,
+  sendMessage,
+  subscribeToTopic,
+} from "../../services/ChatService";
 
 import Message from "./Message";
 import Contact from "./Contact";
 import ChatForm from "./ChatForm";
 
-export default function ChatRoom({ currentChat, currentUser, socket, handleChatRoomChange }) {
+export default function ChatRoom({
+  currentChat,
+  currentUser,
+  socket,
+  handleChatRoomChange,
+}) {
   const [messages, setMessages] = useState([]);
   const [incomingMessage, setIncomingMessage] = useState(null);
   const [participants, setParticipants] = useState([]);
   const scrollRef = useRef();
 
-  useEffect(()=> {
-    subscribeToTopic(`/user/${currentUser.userId}/chat`, (message)=>{
-      setMessages((prevMessages) => [...prevMessages, message]);
-      handleChatRoomChange(message.roomId, {lastMessage: message, lastModifiedAt: message.createdAt});
+  useEffect(() => {
+    let subscription; // Đặt subscription trong scope bên ngoài
+
+  const setupSubscription = async () => {
+    subscription = await subscribeToTopic(`/user/${currentUser.userId}/chat`, (message) => {
+      console.log("current room: " + currentChat.roomId);
+      console.log("mess room: " + message.roomId);
+      if (currentChat?.roomId === message.roomId) {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
+      handleChatRoomChange(message.roomId, {
+        lastMessage: message,
+        lastModifiedAt: message.createdAt,
+      });
     });
-  }, [])
+  };
+
+  setupSubscription();
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [currentChat.roomId, currentUser.userId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,24 +65,43 @@ export default function ChatRoom({ currentChat, currentUser, socket, handleChatR
     incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
   }, [incomingMessage]);
 
-  const handleFormSubmit = async (message) => {
-    sendMessage(`/app/chat/${currentChat.roomId}`, {
-      senderId: currentUser.userId,
-      // media: media,
-      content: message,
-    })
-    // const res = await sendMessage(messageBody);
-    // setMessages([...messages, message]);
-    
-    const messageToSave = {
-      content: message,
+  const handleFormSubmit = async (messageContent) => {
+    const tempMessage = {
+      content: messageContent,
       senderName: currentUser.fullName,
       senderId: currentUser.userId,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString().substring(0, 19),
+      tempId: Math.random().toString(36).substring(2), // ID tạm thời
     };
-    setMessages((prev) => [...prev, messageToSave]);
-    handleChatRoomChange(currentChat.roomId, {lastMessage: messageToSave, lastModifiedAt: messageToSave.createdAt});
+  
+    setMessages((prev) => [...prev, tempMessage]);
+  
+    try {
+      await sendMessage(`/app/chat/${currentChat.roomId}`, {
+        senderId: currentUser.userId,
+        content: messageContent,
+      });
+  
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.tempId === tempMessage.tempId ? { ...tempMessage, tempId: null } : msg
+        )
+      );
+  
+      handleChatRoomChange(currentChat.roomId, {
+        lastMessage: tempMessage,
+        lastModifiedAt: tempMessage.createdAt,
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempId ? { ...msg, isSending: false, error: true } : msg
+        )
+      );
+    }
   };
+  
 
   return (
     <div className="lg:col-span-2 lg:block">
@@ -68,7 +114,14 @@ export default function ChatRoom({ currentChat, currentUser, socket, handleChatR
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>
-                <Message currentRoom={currentChat} message={message} self={currentUser.userId} />
+                <Message
+                  currentRoom={currentChat}
+                  message={{
+                    ...message,
+                    isSending: !!message.tempId,
+                  }}
+                  self={currentUser.userId}
+                />
               </div>
             ))}
           </ul>

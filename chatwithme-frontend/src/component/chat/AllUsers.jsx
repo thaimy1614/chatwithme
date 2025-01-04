@@ -15,6 +15,7 @@ export default function AllUsers({
   onlineUsersId,
   currentUser,
   changeChat,
+  currentChat
 }) {
   const [selectedChat, setSelectedChat] = useState();
   const [nonContacts, setNonContacts] = useState([]);
@@ -58,7 +59,7 @@ export default function AllUsers({
             <div
               key={index}
               className={classNames(
-                chatRoom.roomId === selectedChat
+                chatRoom.roomId === currentChat?.roomId
                   ? "bg-gray-100 dark:bg-gray-700"
                   : "transition duration-150 ease-in-out cursor-pointer bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700",
                 "flex items-center px-3 py-2 text-sm "

@@ -1,5 +1,5 @@
-import axios from "axios";
-import { getToken } from "./localStorageService";
+import axios from "../configurations/axiosConfig";
+import { getToken, removeToken, removeUserInfo } from "./localStorageService";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import { over } from "stompjs";
@@ -19,18 +19,18 @@ const onError = (err) => {
   console.log("err=>", err);
 };
 
-export const subscribeToTopic = (topic, callback) => {
-  if (stompClient && stompClient.connected) {
-    stompClient.subscribe(topic, (message) => {
-      callback(JSON.parse(message.body));
-    });
-  } else {
-    console.error("Stomp client is not connected.");
+export const subscribeToTopic = async (topic, callback) => {
+  while (!stompClient || !stompClient.connected) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
+
+  return stompClient.subscribe(topic, (message) => {
+    callback(JSON.parse(message.body));
+  });
 };
 
 // Hàm gửi tin nhắn qua WebSocket
-export const sendMessage = (destination, message) => {
+export const sendMessage = async (destination, message) => {
   if (stompClient && stompClient.connected) {
     stompClient.send(destination, {}, JSON.stringify(message));
   } else {
@@ -130,7 +130,7 @@ export const getChatRoomOfUsers = async (firstUserId, secondUserId) => {
 
 export const createPrivateChatRoom = async (userId) => {
   const header = await createHeader();
-  
+
   try {
     const res = await axios.post(`/room/private?userId2=${userId}`, {}, header);
     return res.data.result;
@@ -140,7 +140,7 @@ export const createPrivateChatRoom = async (userId) => {
 };
 export const createGroupChatRoom = async (room) => {
   const header = await createHeader();
-  
+
   try {
     const res = await axios.post(`/room/group`, room, header);
     return res.data.result;
@@ -154,8 +154,8 @@ export const getMessagesOfChatRoom = async (chatRoomId) => {
 
   try {
     const res = await axios.get(`/message/${chatRoomId}/messages`, header);
-    const messages = res.data.result.content.sort((a, b) =>
-      new Date(a.createdAt) - new Date(b.createdAt)
+    const messages = res.data.result.content.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
     );
     return messages;
   } catch (e) {
@@ -189,9 +189,21 @@ export const searchUsers = async (searchTerm, page, size) => {
   const header = await createHeader();
 
   try {
-    const res = await axios.get(`/user/search?key=${searchTerm}&page=${page}&size=${size}`, header);
+    const res = await axios.get(
+      `/user/search?key=${searchTerm}&page=${page}&size=${size}`,
+      header
+    );
     return res.data.result.content;
   } catch (e) {
     console.error(e);
   }
-}
+};
+
+export const refreshToken = async (token) => {
+  try {
+    const res = await axios.post("/user/refresh", { token: token }, {});
+    return res.data.result.token;
+  } catch (e) {
+    console.error(e);
+  }
+};
