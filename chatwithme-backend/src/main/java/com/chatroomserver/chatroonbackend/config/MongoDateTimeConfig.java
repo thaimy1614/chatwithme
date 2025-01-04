@@ -18,13 +18,17 @@ public class MongoDateTimeConfig {
                 new org.springframework.core.convert.converter.Converter<Date, LocalDateTime>() {
                     @Override
                     public LocalDateTime convert(Date source) {
-                        return source.toInstant().atZone(ZoneOffset.of("+07:00")).toLocalDateTime();
+                        return source.toInstant()
+                                .atZone(ZoneOffset.systemDefault())
+                                .toLocalDateTime();
                     }
                 },
                 new org.springframework.core.convert.converter.Converter<LocalDateTime, Date>() {
                     @Override
                     public Date convert(LocalDateTime source) {
-                        return Date.from(source.atZone(ZoneOffset.of("+07:00")).toInstant());
+                        return Date.from(source
+                                .atZone(ZoneOffset.systemDefault())
+                                .toInstant());
                     }
                 }
         ));
