@@ -1,5 +1,4 @@
 import { Route, Routes, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Login } from "./Layout/Login";
 import { ChatPage2 } from "./Layout/ChatPage2";
 import { Signup } from "./Layout/Signup";
@@ -10,10 +9,8 @@ import Profile from "./component/accounts/Profile";
 import { connectWebsocket } from "./services/ChatService";
 import { useEffect } from "react";
 import Header from "./component/layouts/Header";
-import { UserProvider } from "./context/UserContext";
-axios.defaults.baseURL =
-  import.meta.env.VITE_API_PREFIX || "http://localhost:8080";
-axios.defaults.withCredentials = true;
+import { UserProvider, useUser } from "./context/UserContext";
+
 function App() {
   useEffect(() => {
     connectWebsocket();
