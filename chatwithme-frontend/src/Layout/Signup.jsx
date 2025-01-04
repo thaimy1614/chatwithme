@@ -9,7 +9,7 @@ import {
 } from "../services/localStorageService";
 import Loading from "../component/common/loading";
 import MessageModal from "../component/common/message-modal";
-import axios from "axios";
+import axios from "../configurations/axiosConfig";
 
 export const Signup = () => {
   const navigate = useNavigate();
