@@ -27,58 +27,57 @@ export default function Message({ currentRoom, message, self }) {
         "flex"
       )}
     >
-      <div className="max-w-[60%]"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      <div
+        className="max-w-[60%]"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-  <div
-    className={classNames(
-      self !== message.senderId
-        ? "text-gray-700 dark:text-gray-400 bg-white border border-gray-200 shadow-md dark:bg-gray-900 dark:border-gray-700"
-        : "bg-blue-600 dark:bg-blue-500 text-white",
-      "p-2 relative block rounded-lg shadow break-words max-w-full"
-    )}
-    style={{ wordBreak: "break-word" }} // Đảm bảo nội dung xuống dòng nếu quá dài
-  >
-    {currentRoom.group && self !== message.senderId && (
-      <span className="text-s text-gray-500 dark:text-gray-400 mt-0.5">
-        {message.senderName}{" "}
-        {message.senderId === currentRoom.createdBy && (
-          <KeyIcon
-            className="d-inline-block h-4 w-4 text-yellow-400 dark:text-yellow-400"
-            aria-hidden="true"
-          />
-        )}
-      </span>
-    )}
-
-    <span className="block font-normal p-2 text-start">{message.content}</span>
-  </div>
-
-  {/* Thời gian được đặt trong một div cố định */}
-  <div
-    className="flex justify-start mt-0.5"
-    style={{
-      display: "flex",
-      justifyContent: self !== message.senderId ? "flex-start" : "flex-end",
-      maxWidth: "100%", // Giới hạn chiều rộng
-    }}
-  >
-    <span
-      className="block text-xs text-gray-500 dark:text-gray-400"
-      style={{
-        whiteSpace: "nowrap", // Ngăn thời gian kéo dài
-        overflow: "hidden", // Ẩn nội dung thừa
-        textOverflow: "ellipsis", // Hiển thị dấu "..."
-      }}
-    >
-      {!isHovered
-        ? format(convertDateTimeZone(message.createdAt).toString(), "vi")
-        : convertDateTimeZone(message.createdAt).toTimeString().substring(0, 5)} 
-    </span>
-  </div>
-</div>
-
+        {/* Tin nhắn và thời gian */}
+        <div
+          className={classNames(
+            self !== message.senderId
+              ? "text-gray-700 dark:text-gray-400 bg-white border border-gray-200 shadow-md dark:bg-gray-900 dark:border-gray-700"
+              : "bg-blue-600 dark:bg-blue-500 text-white",
+            "p-2 relative block rounded-lg shadow break-words max-w-full"
+          )}
+          style={{ wordBreak: "break-word" }}
+        >
+          {/* Tên người gửi nếu cần */}
+          {currentRoom.group && self !== message.senderId && (
+            <span className="text-s text-gray-500 dark:text-gray-400 mt-0.5">
+              {message.senderName}{" "}
+              {message.senderId === currentRoom.createdBy && (
+                <KeyIcon
+                  className="d-inline-block h-4 w-4 text-yellow-400 dark:text-yellow-400"
+                  aria-hidden="true"
+                />
+              )}
+            </span>
+          )}
+  
+          {/* Nội dung tin nhắn */}
+          <span className="block font-normal p-2 text-start min-w-[80px]">
+            {message.content}
+          </span>
+  
+          {/* Thời gian bên dưới */}
+          <span
+            className={(self !== message.senderId ? "text-gray-500 dark:text-gray-400" : "text-white-500 dark:text-white-400") +"block text-xs mt-1 text-start"}
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {!isHovered
+              ? format(convertDateTimeZone(message.createdAt).toString(), "vi")
+              : convertDateTimeZone(message.createdAt)
+                  .toTimeString()
+                  .substring(0, 5)}
+          </span>
+        </div>
+      </div>
     </li>
   );
+  
 }

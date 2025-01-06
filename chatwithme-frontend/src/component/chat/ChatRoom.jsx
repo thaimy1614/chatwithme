@@ -22,23 +22,24 @@ export default function ChatRoom({
   const scrollRef = useRef();
 
   useEffect(() => {
-    let subscription; // Đặt subscription trong scope bên ngoài
+    let subscription;
 
-  const setupSubscription = async () => {
-    subscription = await subscribeToTopic(`/user/${currentUser.userId}/chat`, (message) => {
-      console.log("current room: " + currentChat.roomId);
-      console.log("mess room: " + message.roomId);
-      if (currentChat?.roomId === message.roomId) {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      }
-      handleChatRoomChange(message.roomId, {
-        lastMessage: message,
-        lastModifiedAt: message.createdAt,
-      });
-    });
-  };
+    const setupSubscription = async () => {
+      subscription = await subscribeToTopic(
+        `/user/${currentUser.userId}/chat`,
+        (message) => {
+          if (currentChat?.roomId === message.roomId) {
+            setMessages((prevMessages) => [...prevMessages, message]);
+          }
+          handleChatRoomChange(message.roomId, {
+            lastMessage: message,
+            lastModifiedAt: message.createdAt,
+          });
+        }
+      );
+    };
 
-  setupSubscription();
+    setupSubscription();
     return () => {
       if (subscription) {
         subscription.unsubscribe();
@@ -73,21 +74,23 @@ export default function ChatRoom({
       createdAt: new Date().toISOString().substring(0, 19),
       tempId: Math.random().toString(36).substring(2), // ID tạm thời
     };
-  
+
     setMessages((prev) => [...prev, tempMessage]);
-  
+
     try {
       await sendMessage(`/app/chat/${currentChat.roomId}`, {
         senderId: currentUser.userId,
         content: messageContent,
       });
-  
+
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.tempId === tempMessage.tempId ? { ...tempMessage, tempId: null } : msg
+          msg.tempId === tempMessage.tempId
+            ? { ...tempMessage, tempId: null }
+            : msg
         )
       );
-  
+
       handleChatRoomChange(currentChat.roomId, {
         lastMessage: tempMessage,
         lastModifiedAt: tempMessage.createdAt,
@@ -101,7 +104,6 @@ export default function ChatRoom({
       );
     }
   };
-  
 
   return (
     <div className="lg:col-span-2 lg:block">
