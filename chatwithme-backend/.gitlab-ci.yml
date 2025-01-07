@@ -1,14 +1,17 @@
-image: docker:20
-
 stages:
   - build
   - deploy
 
-
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_BUILDKIT: 1
 
 # Build Docker Image
 build:
+  image: docker:20
   stage: build
+  services:
+  - docker:20-dind
   script:
     - docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:latest .
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -19,17 +22,20 @@ build:
 # Deploy to EC2
 deploy:
   stage: deploy
-
+  image: ubuntu:20.04
   script:
-    - apk add --no-cache openssh
+    - apt-get update && apt-get install -y openssh-client
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << EOF
-        cd $PATH_TO_PROJECT
-        docker compose pull
-        docker compose up -d --remove-orphans
-        docker image prune -f
+        export PATH=$PATH:/usr/bin:/usr/local/bin && \
+        docker --version && \
+        docker compose version && \
+        cd "$PATH_TO_PROJECT" && \
+        /usr/bin/docker compose pull && \
+        /usr/bin/docker compose up -d --remove-orphans && \
+        /usr/bin/docker image prune -f
       EOF
   only:
     - main

@@ -6,4 +6,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface MessageService {
     Page<Message> getMessagesByRoom(String roomId, String userId, Pageable pageable);
+
+    Page<Message> searchMessage(String query, String roomId, String userId, Pageable pageable);
 }

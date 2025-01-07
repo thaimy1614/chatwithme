@@ -12,5 +12,4 @@ public interface RoomRepository extends MongoRepository<Room, String> {
     Page<Room> findByMembersContainingOrderByLastModifiedAtDesc(String userId, Pageable pageable);
 
     Optional<Room> findByMembersEqualsAndGroup(List<String> members, boolean group);
-
 }

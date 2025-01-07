@@ -32,4 +32,16 @@ public class MessageServiceImpl implements MessageService {
 
         return messageRepository.findAllByRoomId(roomId, pageable);
     }
+
+    @Override
+    public Page<Message> searchMessage(String query, String roomId, String userId, Pageable pageable) {
+        Room room = roomRepository.findById(roomId).orElseThrow(
+                () -> new AppException(ErrorCode.ROOM_NOT_FOUND)
+        );
+        List<String> members = room.getMembers();
+        if (!members.contains(userId)) {
+            throw new AppException(ErrorCode.NOT_HAVE_PERMISSION);
+        }
+        return messageRepository.findByContentContainingAndRoomIdEquals(query, roomId, pageable);
+    }
 }

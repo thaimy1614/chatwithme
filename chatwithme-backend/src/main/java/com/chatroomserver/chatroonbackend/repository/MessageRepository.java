@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface MessageRepository extends MongoRepository<Message, String> {
+    Page<Message> findByContentContainingAndRoomIdEquals(String content, String roomId, Pageable pageable);
 
     Page<Message> findAllByRoomId(String chatId, Pageable pageable);
 }

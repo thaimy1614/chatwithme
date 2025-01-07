@@ -40,4 +40,15 @@ public class MessageController {
                 .message("Get messages successfully!")
                 .result(response).build();
     }
+
+    @GetMapping("/search/{roomId}")
+    ApiResponse<Page<Message>> search(@RequestParam String query, @PathVariable String roomId, JwtAuthenticationToken token) {
+        String userId = token.getName();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        Page<Message> response = messageService.searchMessage(query, roomId, userId, pageable);
+        return ApiResponse.<Page<Message>>builder()
+                .message("Search messages successfully!")
+                .result(response)
+                .build();
+    }
 }
