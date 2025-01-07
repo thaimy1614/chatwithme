@@ -1,0 +1,35 @@
+image: docker:20
+
+stages:
+  - build
+  - deploy
+
+
+
+# Build Docker Image
+build:
+  stage: build
+  script:
+    - docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:latest .
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - docker push $DOCKER_USERNAME/$DOCKER_IMAGE:latest 
+  only:
+    - main
+
+# Deploy to EC2
+deploy:
+  stage: deploy
+
+  script:
+    - apk add --no-cache openssh
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << EOF
+        cd $PATH_TO_PROJECT
+        docker compose pull
+        docker compose up -d --remove-orphans
+        docker image prune -f
+      EOF
+  only:
+    - main
