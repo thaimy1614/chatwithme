@@ -1,14 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 import {
   getMessagesOfChatRoom,
+  searchMessage,
   sendMessage,
   subscribeToTopic,
 } from "../../services/ChatService";
-
+import { debounce } from "lodash";
 import Message from "./Message";
 import Contact from "./Contact";
 import ChatForm from "./ChatForm";
+import RoomHeader from "./RoomHeader";
+import { convertDateTimeZone } from "../../utils/DateTimeZone";
 
 export default function ChatRoom({
   currentChat,
@@ -19,6 +22,13 @@ export default function ChatRoom({
   const [messages, setMessages] = useState([]);
   const [incomingMessage, setIncomingMessage] = useState(null);
   const [participants, setParticipants] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
+
+  const searchInputRef = useRef(null);
+  // const messagesEndRef = useRef(null);
   const scrollRef = useRef();
 
   useEffect(() => {
@@ -38,7 +48,8 @@ export default function ChatRoom({
         }
       );
     };
-
+    setSearchQuery("");
+    setSearchResults([]);
     setupSubscription();
     return () => {
       if (subscription) {
@@ -72,7 +83,7 @@ export default function ChatRoom({
       senderName: currentUser.fullName,
       senderId: currentUser.userId,
       createdAt: new Date().toISOString().substring(0, 19),
-      tempId: Math.random().toString(36).substring(2), // ID tạm thời
+      tempId: Math.random().toString(36).substring(2),
     };
 
     setMessages((prev) => [...prev, tempMessage]);
@@ -105,14 +116,56 @@ export default function ChatRoom({
     }
   };
 
-  return (
-    <div className="lg:col-span-2 lg:block">
-      <div className="w-full">
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-          <Contact chatRoom={currentChat} currentUser={currentUser} />
-        </div>
+  const handleSearchChange = (e) => {
+    const query = e.target.value.trim();
+    setSearchQuery(e.target.value);
+    debounceSearch(query);
+  };
 
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+  const debounceSearch = useCallback(
+    debounce(async (query) => {
+      if (query === "") {
+        setSearchResults([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const results = await searchMessage(currentChat.roomId, query);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 1000),
+    [currentChat.roomId]
+  );
+
+  const handleSearchClick = (messageId) => {
+    const element = document.getElementById(messageId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      const originalBackgroundColor = element.style.backgroundColor;
+      element.style.transition = "background-color 2s ease";
+      element.style.backgroundColor = "yellow";
+      setTimeout(() => {
+        element.style.backgroundColor = originalBackgroundColor;
+      }, 2000);
+    }
+  };
+
+  return (
+    <div className="flex h-full lg:grid lg:grid-cols-[3fr_1fr]">
+      <div className="flex flex-col w-full bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+          <RoomHeader
+            setShowSearchBar={setShowSearchBar}
+            chatRoom={currentChat}
+            currentUser={currentUser}
+            showSearchBar={showSearchBar}
+          />
+        </div>
+        <div className="relative w-full flex-grow h-[30rem] overflow-y-auto p-6 bg-white dark:bg-gray-900">
           <ul className="space-y-2">
             {messages.map((message, index) => (
               <div key={index} ref={scrollRef}>
@@ -129,8 +182,57 @@ export default function ChatRoom({
           </ul>
         </div>
 
+        {/* Form gửi tin nhắn */}
         <ChatForm handleFormSubmit={handleFormSubmit} />
       </div>
+
+      {/* Khu vực tìm kiếm */}
+      {showSearchBar && (
+        <div className="flex flex-col w-full bg-gray-100 dark:bg-gray-800">
+          {/* Thanh tìm kiếm */}
+          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+            <input
+              ref={searchInputRef}
+              type="text"
+              className="w-full p-2 border rounded"
+              placeholder="Tìm kiếm tin nhắn..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            {isSearching && (
+              <p className="text-sm text-gray-500">Đang tìm...</p>
+            )}
+          </div>
+
+          {/* Kết quả tìm kiếm */}
+          <div className="h-[30rem] flex-grow overflow-y-auto p-3">
+            {searchResults.length > 0 ? (
+              <ul className="space-y-2">
+                {searchResults.map((result) => (
+                  <li
+                    key={result.id}
+                    className="p-2 border rounded cursor-pointer hover:bg-gray-200"
+                    onClick={() => handleSearchClick(result.id)}
+                  >
+                    <p>
+                      <strong>{result.senderName}:</strong> {result.content}
+                    </p>
+                    <small className="text-sm text-gray-500">
+                      {convertDateTimeZone(result.createdAt)
+                        .toLocaleDateString("vi-VN")}
+                        {" "}
+                      {convertDateTimeZone(result.createdAt)
+                        .toLocaleTimeString("vi-VN")}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">Không có kết quả nào</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
