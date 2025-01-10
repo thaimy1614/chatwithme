@@ -3,15 +3,14 @@ stages:
   - deploy
 
 variables:
-  DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_BUILDKIT: 1
 
 # Build Docker Image
 build:
-  image: docker:20
   stage: build
+  image: docker:20.10
   services:
-  - docker:20-dind
+    - docker:dind
   script:
     - docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:latest .
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -22,20 +21,18 @@ build:
 # Deploy to EC2
 deploy:
   stage: deploy
-  image: ubuntu:20.04
-  script:
-    - apt-get update && apt-get install -y openssh-client
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update
+    - apt-get install -y openssh-client
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    - ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << EOF
-        export PATH=$PATH:/usr/bin:/usr/local/bin && \
-        docker --version && \
-        docker compose version && \
-        cd "$PATH_TO_PROJECT" && \
-        /usr/bin/docker compose pull && \
-        /usr/bin/docker compose up -d --remove-orphans && \
-        /usr/bin/docker image prune -f
-      EOF
+    - ssh-keyscan -H $SSH_HOST 2>/dev/null >> ~/.ssh/known_hosts || echo "Failed to add SSH key"
+  script:
+    - ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd $PATH_TO_PROJECT && docker compose pull"
+    - ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd $PATH_TO_PROJECT && docker rm -f harmonytime-server"
+    - ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd $PATH_TO_PROJECT && docker compose up -d"
+    - ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd $PATH_TO_PROJECT && docker image prune -f"
   only:
     - main
