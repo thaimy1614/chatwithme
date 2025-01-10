@@ -155,7 +155,11 @@ export default function ChatRoom({
   };
 
   return (
-    <div className="flex h-full lg:grid lg:grid-cols-[3fr_1fr]">
+    <div
+      className={`flex h-full ${
+        showSearchBar ? "lg:grid lg:grid-cols-[3fr_1fr]" : ""
+      }`}
+    >
       <div className="flex flex-col w-full bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700">
         <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
           <RoomHeader
@@ -188,7 +192,7 @@ export default function ChatRoom({
 
       {/* Khu vực tìm kiếm */}
       {showSearchBar && (
-        <div className="flex flex-col w-full bg-gray-100 dark:bg-gray-800">
+        <div className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap flex flex-col w-full bg-gray-100 dark:bg-gray-800">
           {/* Thanh tìm kiếm */}
           <div className="p-3 border-b border-gray-200 dark:border-gray-700">
             <input
@@ -205,30 +209,38 @@ export default function ChatRoom({
           </div>
 
           {/* Kết quả tìm kiếm */}
-          <div className="h-[30rem] flex-grow overflow-y-auto p-3">
+          <div className="h-[30rem] flex-grow overflow-y-auto p-2">
             {searchResults.length > 0 ? (
               <ul className="space-y-2">
                 {searchResults.map((result) => (
                   <li
                     key={result.id}
-                    className="p-2 border rounded cursor-pointer hover:bg-gray-200"
+                    className="p-2 border rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
                     onClick={() => handleSearchClick(result.id)}
                   >
-                    <p>
-                      <strong>{result.senderName}:</strong> {result.content}
+                    <p className="dark:text-blue-500">
+                      <strong className="dark:text-blue-400">
+                        {result.senderName}:
+                      </strong>{" "}
+                      <span className="block overflow-hidden text-ellipsis whitespace-nowrap line-clamp-2">
+                        {result.content}
+                      </span>
                     </p>
-                    <small className="text-sm text-gray-500">
-                      {convertDateTimeZone(result.createdAt)
-                        .toLocaleDateString("vi-VN")}
-                        {" "}
-                      {convertDateTimeZone(result.createdAt)
-                        .toLocaleTimeString("vi-VN")}
+                    <small className="text-sm text-gray-500 dark:text-white">
+                      {convertDateTimeZone(result.createdAt).toLocaleDateString(
+                        "vi-VN"
+                      )}{" "}
+                      {convertDateTimeZone(result.createdAt).toLocaleTimeString(
+                        "vi-VN"
+                      )}
                     </small>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">Không có kết quả nào</p>
+              <p className="text-sm text-gray-500 dark:text-white">
+                Không có kết quả nào
+              </p>
             )}
           </div>
         </div>
