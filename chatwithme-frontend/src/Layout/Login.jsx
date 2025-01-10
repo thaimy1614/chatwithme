@@ -12,11 +12,11 @@ import MessageModal from "../component/common/message-modal";
 import axios from "../configurations/axiosConfig";
 import { useUser } from "../context/UserContext";
 
-export const fetchUserInfo = async () => {
+export const fetchUserInfo = async (token) => {
   try {
     const response = await axios.get("/user/my-info", {
       headers: {
-        Authorization: `Bearer ${getToken()}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     const data = await response.data;
@@ -91,7 +91,7 @@ export const Login = () => {
       }
 
       setToken(data.result.token);
-      const userInfo = await fetchUserInfo();
+      const userInfo = await fetchUserInfo(data.result.token);
 
       if (userInfo) {
         setCurrentUser(userInfo);
