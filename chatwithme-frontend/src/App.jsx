@@ -11,6 +11,49 @@ import { useEffect } from "react";
 import Header from "./component/layouts/Header";
 import { UserProvider, useUser } from "./context/UserContext";
 
+import React from "react";
+
+const AudioPlayer = () => {
+  useEffect(() => {
+    let audio = new Audio("/assets/audio/elakhongthe.mp3");
+    audio.loop = true;
+
+    const savedTime = localStorage.getItem("audioCurrentTime");
+    if (savedTime) {
+      audio.currentTime = parseFloat(savedTime);
+    }
+
+    const handleInteraction = () => {
+      audio.play().catch((error) => {
+        console.warn("Audio play failed due to:", error);
+      });
+
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+
+    window.addEventListener("click", handleInteraction);
+    window.addEventListener("touchstart", handleInteraction);
+    
+    const saveTimeInterval = setInterval(() => {
+      if (!audio.paused) {
+        localStorage.setItem("audioCurrentTime", audio.currentTime.toString());
+      }
+    }, 1000);
+
+    return () => {
+      // Dọn dẹp sự kiện và audio khi component unmount
+      clearInterval(saveTimeInterval);
+      audio.pause();
+      audio = null; // Giải phóng bộ nhớ
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, []);
+
+  return null; // Không render gì lên giao diện
+};
+
 function App() {
   useEffect(() => {
     connectWebsocket();
@@ -18,6 +61,7 @@ function App() {
 
   return (
     <UserProvider>
+      <AudioPlayer />
       <Header />
       <Routes>
         <Route
