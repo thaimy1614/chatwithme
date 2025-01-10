@@ -22,7 +22,7 @@ export default function UserLayout({ user, onlineUsersId }) {
             <span
               className="text-gray-500 dark:text-gray-400 truncate"
               style={{
-                maxWidth: "250px", // Giới hạn chiều rộng của tin nhắn để dành chỗ cho thời gian
+                maxWidth: "100px", // Giới hạn chiều rộng của tin nhắn để dành chỗ cho thời gian
                 overflow: "hidden", // Ẩn phần thừa
                 whiteSpace: "nowrap", // Không cho xuống dòng
                 textOverflow: "ellipsis", // Hiển thị dấu "..."

@@ -33,10 +33,10 @@ export default function Message({ currentRoom, message, self }) {
         onMouseLeave={handleMouseLeave}
       >
         {/* Tin nhắn và thời gian */}
-        <div
+        <div id={message.id}
           className={classNames(
             self !== message.senderId
-              ? "text-gray-700 dark:text-gray-400 bg-white border border-gray-200 shadow-md dark:bg-gray-900 dark:border-gray-700"
+              ? "text-gray-700 dark:text-white bg-white-600 border border-gray-200 shadow-md dark:bg-gray-900 dark:border-gray-700"
               : "bg-blue-600 dark:bg-blue-500 text-white",
             "p-2 relative block rounded-lg shadow break-words max-w-full"
           )}
@@ -44,7 +44,7 @@ export default function Message({ currentRoom, message, self }) {
         >
           {/* Tên người gửi nếu cần */}
           {currentRoom.group && self !== message.senderId && (
-            <span className="text-s text-gray-500 dark:text-gray-400 mt-0.5">
+            <span className="text-s text-gray-500 dark:text-white mt-0.5">
               {message.senderName}{" "}
               {message.senderId === currentRoom.createdBy && (
                 <KeyIcon
@@ -62,7 +62,7 @@ export default function Message({ currentRoom, message, self }) {
   
           {/* Thời gian bên dưới */}
           <span
-            className={(self !== message.senderId ? "text-gray-500 dark:text-gray-400" : "text-white-500 dark:text-white-400") +"block text-xs mt-1 text-start"}
+            className={(self !== message.senderId ? "text-gray-500 dark:text-white " : "text-white-500 dark:text-white ") +"block text-xs mt-1 text-start"}
             style={{
               whiteSpace: "nowrap",
               overflow: "hidden",

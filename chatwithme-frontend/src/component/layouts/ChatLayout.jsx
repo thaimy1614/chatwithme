@@ -165,14 +165,17 @@ export default function ChatLayout() {
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="min-w-full bg-white border-x border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded lg:grid lg:grid-cols-3">
-        <div className="bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 lg:col-span-1">
+    <div className="container mx-auto h-full flex flex-col">
+      {/* Bố cục chính */}
+      <div className="flex flex-grow bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-lg">
+        
+        {/* Sidebar (Danh sách người dùng) */}
+        <div className="w-1/4 bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700">
           <SearchUsers
             handleSearch={handleSearch}
             handleShowSearchPopup={handleShowSearchPopup}
           />
-
+  
           <AllUsers
             users={searchQuery !== "" ? filteredUsers : users}
             chatRooms={searchQuery !== "" ? filteredRooms : chatRooms}
@@ -183,18 +186,23 @@ export default function ChatLayout() {
             currentChat={currentChat}
           />
         </div>
-
-        {currentChat ? (
-          <ChatRoom
-            currentChat={currentChat}
-            currentUser={currentUser}
-            socket={socket}
-            handleChatRoomChange={handleChatRoomChange}
-          />
-        ) : (
-          <Welcome />
-        )}
+  
+        {/* Khung chat hoặc màn hình chào mừng */}
+        <div className="w-3/4 flex-grow">
+          {currentChat ? (
+            <ChatRoom
+              currentChat={currentChat}
+              currentUser={currentUser}
+              socket={socket}
+              handleChatRoomChange={handleChatRoomChange}
+            />
+          ) : (
+            <Welcome />
+          )}
+        </div>
       </div>
+  
+      {/* Popup tìm kiếm */}
       <SearchPopup
         currentUser={currentUser}
         show={modal}
@@ -203,4 +211,5 @@ export default function ChatLayout() {
       />
     </div>
   );
+  
 }
