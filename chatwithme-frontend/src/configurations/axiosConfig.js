@@ -4,8 +4,10 @@ import {
   removeToken,
   removeUserInfo,
   setToken,
+  setUserInfo,
 } from "../services/localStorageService";
 import { refreshToken } from "../services/ChatService";
+import { fetchUserInfo } from "../Layout/Login";
 
 axios.defaults.baseURL = import.meta.env.VITE_API_PREFIX || "http://localhost:8080/api";
 axios.defaults.withCredentials = true;
@@ -14,7 +16,9 @@ axios.defaults.withCredentials = true;
 const handleLogout = async () => {
   removeToken();
   removeUserInfo();
+  setTimeout(() => {
   window.location.href = "/login";
+  }, 5000);
 };
 
 // Hàm làm mới token
@@ -27,6 +31,8 @@ const handleTokenRefresh = async () => {
   }
   console.log("New token: ", newToken);
   setToken(newToken);
+  const newUser = await fetchUserInfo();
+  setUserInfo(newUser);
   return newToken;
 };
 
