@@ -207,3 +207,16 @@ export const refreshToken = async (token) => {
     console.error(e);
   }
 };
+
+export const searchMessage = async (roomId, query) => {
+  const header = await createHeader();
+
+  try {
+    const encodedQuery = encodeURIComponent(query);
+    console.log(`/message/search/${roomId}?query=${encodedQuery}`)
+    const res = await axios.get(`/message/search/${roomId}?query=${encodedQuery}`, header);
+    return res.data.result.content;
+  } catch (e) {
+    console.error(e);
+  }
+};
