@@ -1,0 +1,57 @@
+.video-call-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .video-call-modal {
+    background: #fff;
+    border-radius: 10px;
+    width: 600px;
+    max-width: 90%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .video-call-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #007bff;
+    color: white;
+  }
+  
+  .close-button {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .video-call-body {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f9f9f9;
+  }
+  
+  .local-video,
+  .remote-video {
+    width: 48%;
+    height: 300px;
+    border-radius: 8px;
+    background: black;
+    object-fit: cover;
+  }
+  
