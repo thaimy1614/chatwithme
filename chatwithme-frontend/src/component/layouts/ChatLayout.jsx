@@ -5,7 +5,9 @@ import {
   createPrivateChatRoom,
   getAllUsers,
   getMyRooms,
+  getSocket,
   subscribeToTopic,
+  subscribeVideoCallRequest,
 } from "../../services/ChatService";
 
 import ChatRoom from "../chat/ChatRoom";
@@ -14,6 +16,9 @@ import AllUsers from "../chat/AllUsers";
 import SearchUsers from "../chat/SearchUsers";
 import { getUserInfo } from "../../services/localStorageService";
 import SearchPopup from "./SearchPopup";
+import { use } from "react";
+import VideoCallModal from "../chat/video-modal/VideoCallModal";
+import { createPeerConnection } from "../../utils/webrtc";
 
 export default function ChatLayout() {
   const [users, SetUsers] = useState([]);
@@ -89,7 +94,6 @@ export default function ChatLayout() {
       });
     });
   }, [currentUser.userId]);
-  
 
   const handleSearch = (newSearchQuery) => {
     setSearchQuery(newSearchQuery);
@@ -149,7 +153,6 @@ export default function ChatLayout() {
         room.roomId === roomId ? { ...room, ...updatedFields } : room
       );
 
-      // Đưa phần tử đã cập nhật lên đầu danh sách
       const updatedRoom = updatedRooms.find((room) => room.roomId === roomId);
       const filteredRooms = updatedRooms.filter(
         (room) => room.roomId !== roomId
@@ -157,25 +160,69 @@ export default function ChatLayout() {
 
       return [updatedRoom, ...filteredRooms];
     });
-    if(currentChat?.roomId === roomId){
+    if (currentChat?.roomId === roomId) {
       setCurrentChat((prev) => {
         return { ...prev, ...updatedFields };
       });
     }
   };
+  const [isCallIncoming, setIsCallIncoming] = useState(false);
+  const [callData, setCallData] = useState(null);
+
+  const stompClient = getSocket();
+  useEffect(() => {
+
+    subscribeVideoCallRequest(`/user/${currentUser.userId}/queue/call/request`, (data) => {
+      if (data?.signalingMessage?.type === "offer") {
+        setCallData(data); 
+        setIsCallIncoming(true);
+      }
+    })
+
+    return () => {
+      stompClient.disconnect();
+    };
+  }, []);
+
+  const handleCallResponse = (accept) => {
+    if (accept) {
+      // Gửi "answer" đến server
+      stompClient.send(
+        `/app/call/signaling/${callData.roomId}`,
+        {},
+        JSON.stringify({
+          type: "answer",
+          callerId: callData.callerId,
+          roomId: callData.roomId,
+          signalingMessage: { type: "answer", offer: null, answer: true },
+        })
+      );
+    } else {
+      stompClient.send(
+        `/app/call/signaling/${callData.roomId}`,
+        {},
+        JSON.stringify({
+          type: "answer",
+          callerId: callData.callerId,
+          roomId: callData.roomId,
+          signalingMessage: { type: "answer", offer: null, answer: false },
+        })
+      );
+    }
+
+    setIsCallIncoming(false);
+    setCallData(null); 
+  };
 
   return (
     <div className="container mx-auto h-full flex flex-col">
-      {/* Bố cục chính */}
       <div className="flex flex-grow bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded-lg">
-        
-        {/* Sidebar (Danh sách người dùng) */}
         <div className="w-1/4 bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700">
           <SearchUsers
             handleSearch={handleSearch}
             handleShowSearchPopup={handleShowSearchPopup}
           />
-  
+
           <AllUsers
             users={searchQuery !== "" ? filteredUsers : users}
             chatRooms={searchQuery !== "" ? filteredRooms : chatRooms}
@@ -186,8 +233,7 @@ export default function ChatLayout() {
             currentChat={currentChat}
           />
         </div>
-  
-        {/* Khung chat hoặc màn hình chào mừng */}
+
         <div className="w-3/4 flex-grow">
           {currentChat ? (
             <ChatRoom
@@ -201,15 +247,23 @@ export default function ChatLayout() {
           )}
         </div>
       </div>
-  
-      {/* Popup tìm kiếm */}
+
       <SearchPopup
         currentUser={currentUser}
         show={modal}
         handleClose={() => setModal(false)}
         openChatRoom={openChatRoom}
       />
+      {isCallIncoming && (
+        <VideoCallModal
+          isOpen={isCallIncoming}
+          onClose={() => handleCallResponse(false)}
+          onAccept={() => handleCallResponse(true)}
+          callerName={callData?.callerName}
+          roomId={callData.roomId}
+          isCaller={false}
+        />
+      )}
     </div>
   );
-  
 }
