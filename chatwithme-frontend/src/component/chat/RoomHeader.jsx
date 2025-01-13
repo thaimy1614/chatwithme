@@ -1,12 +1,62 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-import { getUser } from "../../services/ChatService";
+import { getSocket, getUser } from "../../services/ChatService";
 import { useUser } from "../../context/UserContext";
 import { convertDateTimeZone } from "../../utils/DateTimeZone";
-import { SearchCircleIcon } from "@heroicons/react/solid";
+import { SearchCircleIcon, VideoCameraIcon } from "@heroicons/react/solid";
+import VideoCallModal from "./video-modal/VideoCallModal";
 
-function UserHeader({ room, onlineUsersId, setShowSearchBar, showSearchBar }) {
+function UserHeader({
+  room,
+  onlineUsersId,
+  setShowSearchBar,
+  showSearchBar,
+  currentRoom,
+}) {
   const { currentUser } = useUser();
+  const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
+  const stompClient = getSocket();
+  console.log(room);
+
+  const handleVideoCall = () => {
+    if (room.group) {
+      alert("Phòng không hợp lệ!");
+      return;
+    }
+  
+    const peerConnection = new RTCPeerConnection();
+  
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
+        return peerConnection.createOffer();
+      })
+      .then((offer) => {
+        peerConnection.setLocalDescription(offer);
+  
+        // Gửi offer qua WebSocket
+        stompClient.send(
+          `/app/call/request/${currentRoom.roomId}`,
+          {},
+          JSON.stringify({
+            callerId: currentUser.userId,
+            roomId: currentRoom.roomId,
+            callerName: currentUser.fullName,
+            signalingMessage: {
+              type: "offer",
+              offer: offer,
+              answer: null,
+              candidate: null,
+            },
+          })
+        );
+      })
+      .catch((error) => console.error("Error during call:", error));
+      setIsVideoCallOpen(true)
+  };
+  
+  
   return (
     <div className="relative flex items-center w-full">
       <img
@@ -20,19 +70,32 @@ function UserHeader({ room, onlineUsersId, setShowSearchBar, showSearchBar }) {
           {room.fullName}
         </span>
       </div>
+      <VideoCameraIcon
+        className="h-8 w-8 cursor-pointer"
+        onClick={handleVideoCall}
+      ></VideoCameraIcon>
       <SearchCircleIcon
         className="h-8 w-8 cursor-pointer"
         onClick={(e) => {
           e.preventDefault();
           setShowSearchBar(!showSearchBar);
         }}
-      >
-      </SearchCircleIcon>
+      ></SearchCircleIcon>
       {/* {onlineUsersId?.includes(user?.userId) ? (
           <span className="bottom-0 left-7 absolute  w-3.5 h-3.5 bg-green-500 dark:bg-green-400 border-2 border-white rounded-full"></span>
         ) : (
           <span className="bottom-0 left-7 absolute  w-3.5 h-3.5 bg-gray-400 border-2 border-white rounded-full"></span>
         )} */}
+      {isVideoCallOpen && (
+        <VideoCallModal
+          isOpen={isVideoCallOpen}
+          onClose={() => setIsVideoCallOpen(false)}
+          roomId={currentRoom.roomId}
+          callerId={currentUser.userId}
+          callerName={currentUser.fullName}
+          isCaller={true}
+        />
+      )}
     </div>
   );
 }
@@ -89,6 +152,7 @@ export default function RoomHeader({
       setShowSearchBar={setShowSearchBar}
       showSearchBar={showSearchBar}
       // onlineUsersId={onlineUsersId}
+      currentRoom={chatRoom}
     />
   );
 }
