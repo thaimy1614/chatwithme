@@ -29,6 +29,26 @@ export const subscribeToTopic = async (topic, callback) => {
   });
 };
 
+export const subscribeVideoCallRequest = async (topic, callback) => {
+  while (!stompClient || !stompClient.connected) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return stompClient.subscribe(topic, (message) => {
+    callback(JSON.parse(message.body));
+  });
+}
+export const subscribeVideoCall = async (topic, callback) => {
+  while (!stompClient || !stompClient.connected) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return stompClient.subscribe(topic, (message) => {
+    callback(JSON.parse(message.body));
+  });
+}
+
+
 // Hàm gửi tin nhắn qua WebSocket
 export const sendMessage = async (destination, message) => {
   if (stompClient && stompClient.connected) {

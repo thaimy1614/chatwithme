@@ -15,7 +15,7 @@ import React from "react";
 
 const AudioPlayer = () => {
   useEffect(() => {
-    let audio = new Audio("/assets/audio/elakhongthe.mp3");
+    let audio = new Audio("/assets/audio/elakhongth.mp3");
     audio.loop = true;
 
     const savedTime = localStorage.getItem("audioCurrentTime");
