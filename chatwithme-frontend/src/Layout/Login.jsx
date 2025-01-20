@@ -4,6 +4,7 @@ import { Button, TextField, Box, Container, Typography } from "@mui/material";
 import { OAuthConfig } from "../configurations/configuration";
 import {
   getToken,
+  setIoStreamToken,
   setToken,
   setUserInfo,
 } from "../services/localStorageService";
@@ -91,6 +92,7 @@ export const Login = () => {
       }
 
       setToken(data.result.token);
+      setIoStreamToken(data.result.ioStreamToken);
       const userInfo = await fetchUserInfo(data.result.token);
 
       if (userInfo) {
