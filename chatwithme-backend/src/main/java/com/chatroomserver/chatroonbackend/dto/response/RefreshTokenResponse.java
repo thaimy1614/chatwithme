@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RefreshTokenResponse {
     private String token;
+    private String ioStreamToken;
 }

@@ -17,6 +17,8 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.getstream.client.Client;
+import io.getstream.core.http.Token;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -59,6 +62,10 @@ public class UserServiceImpl implements UserService {
     private String apiUrl;
     @Value("${jwt.signer-key}")
     private String KEY;
+    @Value("${jwt.io-stream-key}")
+    private String IO_STREAM_KEY;
+    @Value("${jwt.io-stream-secret}")
+    private String IO_STREAM_SECRET;
     @Value("${jwt.expiration-duration}")
     private long EXPIRATION_DURATION;
     @Value("${jwt.refreshable-duration}")
@@ -80,7 +87,7 @@ public class UserServiceImpl implements UserService {
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)).getFullName();
     }
 
-    public LoginResponse authenticate(LoginRequest request) throws JOSEException {
+    public LoginResponse authenticate(LoginRequest request) throws JOSEException, MalformedURLException {
         String username = request.getUsername();
         String password = request.getPassword();
 
@@ -95,10 +102,22 @@ public class UserServiceImpl implements UserService {
         }
 
         var token = generateToken(authUser);
+        var ioStreamToken = generateIoStreamToken(authUser);
         return LoginResponse.builder()
                 .token(token)
                 .username(username)
+                .ioStreamToken(ioStreamToken)
                 .build();
+    }
+
+    public String generateIoStreamToken(User user) throws MalformedURLException {
+        Client client = Client.builder(
+                IO_STREAM_KEY,
+                IO_STREAM_SECRET
+        ).build();
+
+        Token token = client.frontendToken(user.getUserId());
+        return token.toString();
     }
 
     private String generateToken(User user) throws JOSEException {
@@ -149,7 +168,7 @@ public class UserServiceImpl implements UserService {
         return redisTemplate.opsForValue().get("bl_" + jwtId) != null;
     }
 
-    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException {
+    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException, MalformedURLException {
         var signedJWT = verifyToken(request.getToken(), true);
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -160,6 +179,7 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return RefreshTokenResponse.builder()
+                .ioStreamToken(generateIoStreamToken(user))
                 .token(generateToken(user))
                 .build();
     }

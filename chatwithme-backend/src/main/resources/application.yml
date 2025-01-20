@@ -25,6 +25,8 @@ outbound:
 
 jwt:
   signer-key: ${JWT_SIGNING_KEY}
+  io-stream-key: ${JWT_IO_STREAM_KEY}
+  io-stream-secret: ${JWT_IO_STREAM_SECRET}
   expiration-duration: ${JWT_EXPIRATION_DURATION} # in sec
   refreshable-duration: ${JWT_REFRESHABLE_DURATION} # in sec
 

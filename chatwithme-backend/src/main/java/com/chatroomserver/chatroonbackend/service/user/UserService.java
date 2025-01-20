@@ -12,11 +12,12 @@ import com.nimbusds.jose.JOSEException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.List;
 
 public interface UserService {
-    LoginResponse authenticate(LoginRequest loginRequest) throws JOSEException;
+    LoginResponse authenticate(LoginRequest loginRequest) throws JOSEException, MalformedURLException;
 
     boolean introspect(String token);
 
@@ -36,5 +37,5 @@ public interface UserService {
 
     Page<UserResponse> searchUsers(String key, Pageable pageable);
 
-    RefreshTokenResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException;
+    RefreshTokenResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException, MalformedURLException;
 }
