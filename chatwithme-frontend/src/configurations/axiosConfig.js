@@ -3,6 +3,7 @@ import {
   getToken,
   removeToken,
   removeUserInfo,
+  setIoStreamToken,
   setToken,
   setUserInfo,
 } from "../services/localStorageService";
@@ -23,14 +24,16 @@ const handleLogout = async () => {
 
 // Hàm làm mới token
 const handleTokenRefresh = async () => {
-  const newToken = await refreshToken(getToken());
+  const {token, ioStreamToken} = await refreshToken(getToken());
   if (!newToken) {
     console.error("Failed to refresh token, redirecting to login");
     await handleLogout();
     return null;
   }
-  console.log("New token: ", newToken);
-  setToken(newToken);
+  console.log("New token: ", token);
+  setToken(token);
+  setIoStreamToken(ioStreamToken);
+
   const newUser = await fetchUserInfo();
   setUserInfo(newUser);
   return newToken;

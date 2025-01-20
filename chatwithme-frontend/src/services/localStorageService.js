@@ -1,6 +1,7 @@
 export const KEY_TOKEN = "accessToken";
 export const KEY_USER_INFO = "userInfo";
 export const KEY_CURRENT_ROOM = "currentRoom";
+export const KEY_IO_STREAM_TOKEN = "ioStreamToken"
 
 export const setToken = (token) => {
   localStorage.setItem(KEY_TOKEN, token);
@@ -8,6 +9,14 @@ export const setToken = (token) => {
 
 export const getToken = () => {
   return localStorage.getItem(KEY_TOKEN);
+};
+
+export const setIoStreamToken = (token) => {
+  localStorage.setItem(KEY_IO_STREAM_TOKEN, token);
+};
+
+export const getIoStreamToken = () => {
+  return localStorage.getItem(KEY_IO_STREAM_TOKEN);
 };
 
 export const setUserInfo = (userInfo) => {

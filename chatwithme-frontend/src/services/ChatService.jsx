@@ -222,7 +222,7 @@ export const searchUsers = async (searchTerm, page, size) => {
 export const refreshToken = async (token) => {
   try {
     const res = await axios.post("/user/refresh", { token: token }, {});
-    return res.data.result.token;
+    return res.data.result;
   } catch (e) {
     console.error(e);
   }
