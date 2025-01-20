@@ -5,6 +5,7 @@ import { useUser } from "../../context/UserContext";
 import { convertDateTimeZone } from "../../utils/DateTimeZone";
 import { SearchCircleIcon, VideoCameraIcon } from "@heroicons/react/solid";
 import VideoCallModal from "./video-modal/VideoCallModal";
+import { MyUILayout } from "../../utils/MyUILayout";
 
 function UserHeader({
   room,
@@ -23,40 +24,18 @@ function UserHeader({
       alert("Phòng không hợp lệ!");
       return;
     }
-  
-    const peerConnection = new RTCPeerConnection();
-  
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
-        return peerConnection.createOffer();
+
+    setIsVideoCallOpen(true);
+    stompClient.send(
+      `/app/call/request/${currentRoom.roomId}`,
+      {},
+      JSON.stringify({
+        callerId: currentUser.userId,
+        callerName: currentUser.fullName,
       })
-      .then((offer) => {
-        peerConnection.setLocalDescription(offer);
-  
-        // Gửi offer qua WebSocket
-        stompClient.send(
-          `/app/call/request/${currentRoom.roomId}`,
-          {},
-          JSON.stringify({
-            callerId: currentUser.userId,
-            roomId: currentRoom.roomId,
-            callerName: currentUser.fullName,
-            signalingMessage: {
-              type: "offer",
-              offer: offer,
-              answer: null,
-              candidate: null,
-            },
-          })
-        );
-      })
-      .catch((error) => console.error("Error during call:", error));
-      setIsVideoCallOpen(true)
+    );
   };
-  
-  
+
   return (
     <div className="relative flex items-center w-full">
       <img
@@ -86,16 +65,13 @@ function UserHeader({
         ) : (
           <span className="bottom-0 left-7 absolute  w-3.5 h-3.5 bg-gray-400 border-2 border-white rounded-full"></span>
         )} */}
-      {isVideoCallOpen && (
-        <VideoCallModal
-          isOpen={isVideoCallOpen}
-          onClose={() => setIsVideoCallOpen(false)}
-          roomId={currentRoom.roomId}
-          callerId={currentUser.userId}
-          callerName={currentUser.fullName}
-          isCaller={true}
-        />
-      )}
+      {isVideoCallOpen && <MyUILayout 
+                currentRoom = {currentRoom.roomId}
+                callerId = {currentUser.userId}
+                callerName = {currentUser.fullName}
+                calleeId = {currentUser.userId}
+                calleeName = {currentUser.fullName}
+      />}
     </div>
   );
 }

@@ -19,6 +19,7 @@ import SearchPopup from "./SearchPopup";
 import { use } from "react";
 import VideoCallModal from "../chat/video-modal/VideoCallModal";
 import { createPeerConnection } from "../../utils/webrtc";
+import { MyUILayout } from "../../utils/MyUILayout";
 
 export default function ChatLayout() {
   const [users, SetUsers] = useState([]);
@@ -173,46 +174,16 @@ export default function ChatLayout() {
   useEffect(() => {
 
     subscribeVideoCallRequest(`/user/${currentUser.userId}/queue/call/request`, (data) => {
-      if (data?.signalingMessage?.type === "offer") {
+      if (data) {
         setCallData(data); 
         setIsCallIncoming(true);
       }
     })
 
     return () => {
-      stompClient.disconnect();
+      stompClient.unsubscribe(`/user/${currentUser.userId}/queue/call/request`);
     };
-  }, []);
-
-  const handleCallResponse = (accept) => {
-    if (accept) {
-      // Gửi "answer" đến server
-      stompClient.send(
-        `/app/call/signaling/${callData.roomId}`,
-        {},
-        JSON.stringify({
-          type: "answer",
-          callerId: callData.callerId,
-          roomId: callData.roomId,
-          signalingMessage: { type: "answer", offer: null, answer: true },
-        })
-      );
-    } else {
-      stompClient.send(
-        `/app/call/signaling/${callData.roomId}`,
-        {},
-        JSON.stringify({
-          type: "answer",
-          callerId: callData.callerId,
-          roomId: callData.roomId,
-          signalingMessage: { type: "answer", offer: null, answer: false },
-        })
-      );
-    }
-
-    setIsCallIncoming(false);
-    setCallData(null); 
-  };
+  }, []); 
 
   return (
     <div className="container mx-auto h-full flex flex-col">
@@ -255,13 +226,12 @@ export default function ChatLayout() {
         openChatRoom={openChatRoom}
       />
       {isCallIncoming && (
-        <VideoCallModal
-          isOpen={isCallIncoming}
-          onClose={() => handleCallResponse(false)}
-          onAccept={() => handleCallResponse(true)}
-          callerName={callData?.callerName}
-          roomId={callData.roomId}
-          isCaller={false}
+        <MyUILayout
+          currentRoom = {callData.roomId}
+          callerId = {callData.callerId}
+          callerName = {callData.callerName}
+          calleeId = {currentUser.userId}
+          calleeName = {currentUser.fullName}
         />
       )}
     </div>
