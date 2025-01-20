@@ -25,7 +25,7 @@ public interface UserService {
 
     void logout(String token) throws Exception;
 
-    LoginResponse outboundAuthenticate(String code) throws JOSEException;
+    LoginResponse outboundAuthenticate(String code) throws JOSEException, MalformedURLException;
 
     UserResponse getMyInfo(String userId);
 

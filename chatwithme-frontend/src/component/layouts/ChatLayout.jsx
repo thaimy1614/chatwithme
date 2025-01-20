@@ -17,8 +17,6 @@ import SearchUsers from "../chat/SearchUsers";
 import { getUserInfo } from "../../services/localStorageService";
 import SearchPopup from "./SearchPopup";
 import { use } from "react";
-import VideoCallModal from "../chat/video-modal/VideoCallModal";
-import { createPeerConnection } from "../../utils/webrtc";
 import { MyUILayout } from "../../utils/MyUILayout";
 
 export default function ChatLayout() {
@@ -172,18 +170,29 @@ export default function ChatLayout() {
 
   const stompClient = getSocket();
   useEffect(() => {
+    if (!currentUser || !stompClient) return;
 
-    subscribeVideoCallRequest(`/user/${currentUser.userId}/queue/call/request`, (data) => {
-      if (data) {
-        setCallData(data); 
-        setIsCallIncoming(true);
-      }
-    })
-
-    return () => {
-      stompClient.unsubscribe(`/user/${currentUser.userId}/queue/call/request`);
+    const subscribeToCallRequest = () => {
+      stompClient.connect({}, () => {
+        stompClient.subscribe(`/user/${currentUser.userId}/queue/call/request`, (message) => {
+          const data = JSON.parse(message.body);
+          if (data) {
+            setCallData(data);
+            setIsCallIncoming(true);
+          }
+        });
+      }, (error) => {
+        console.error("Error connecting to WebSocket:", error);
+      });
     };
-  }, []); 
+  
+    subscribeToCallRequest();
+    return () => {
+      if (currentUser?.userId && stompClient?.connected) {
+        stompClient.unsubscribe(`/user/${currentUser.userId}/queue/call/request`);
+      }
+    };
+  }, [currentUser]); 
 
   return (
     <div className="container mx-auto h-full flex flex-col">

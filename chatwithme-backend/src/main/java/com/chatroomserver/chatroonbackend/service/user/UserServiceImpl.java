@@ -209,7 +209,7 @@ public class UserServiceImpl implements UserService {
         addTokenToBlacklist(jId, expiryTime);
     }
 
-    public LoginResponse outboundAuthenticate(String code) throws JOSEException {
+    public LoginResponse outboundAuthenticate(String code) throws JOSEException, MalformedURLException {
         var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
                 .code(code)
                 .clientId(CLIENT_ID)
@@ -232,10 +232,11 @@ public class UserServiceImpl implements UserService {
 
                 });
         var token = generateToken(user);
-
+        var ioStreamToken = generateIoStreamToken(user);
         return LoginResponse.builder()
                 .token(token)
                 .username(user.getUsername())
+                .ioStreamToken(ioStreamToken)
                 .build();
     }
 

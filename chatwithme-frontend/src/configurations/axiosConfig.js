@@ -25,7 +25,7 @@ const handleLogout = async () => {
 // Hàm làm mới token
 const handleTokenRefresh = async () => {
   const {token, ioStreamToken} = await refreshToken(getToken());
-  if (!newToken) {
+  if (!token) {
     console.error("Failed to refresh token, redirecting to login");
     await handleLogout();
     return null;
@@ -36,7 +36,7 @@ const handleTokenRefresh = async () => {
 
   const newUser = await fetchUserInfo();
   setUserInfo(newUser);
-  return newToken;
+  return token;
 };
 
 axios.interceptors.response.use(

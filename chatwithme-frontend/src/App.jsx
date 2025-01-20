@@ -1,6 +1,5 @@
 import { Route, Routes, useNavigate } from "react-router-dom";
 import { Login } from "./Layout/Login";
-import { ChatPage2 } from "./Layout/ChatPage2";
 import { Signup } from "./Layout/Signup";
 import Authenticate from "./component/common/Authenticate";
 import ChatLayout from "./component/layouts/ChatLayout";
@@ -84,7 +83,6 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/chat" element={<ChatPage2 />} />
         <Route path="/authenticate" element={<Authenticate />} />
       </Routes>
     </UserProvider>

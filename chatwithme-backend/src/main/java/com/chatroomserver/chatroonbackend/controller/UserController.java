@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class UserController {
     @PostMapping("/outbound/authentication")
     ApiResponse<LoginResponse> outboundAuthenticate(
             @RequestParam("code") String code
-    ) throws JOSEException {
+    ) throws JOSEException, MalformedURLException {
         var result = userService.outboundAuthenticate(code);
         return ApiResponse.<LoginResponse>builder().message("Login with google successfully!").result(result).build();
     }

@@ -28,7 +28,7 @@ export default function UserLayout({ user, onlineUsersId }) {
                 textOverflow: "ellipsis", // Hiển thị dấu "..."
               }}
             >
-              {user.lastMessage.senderId === currentUser.userId
+              {user.lastMessage.senderId === currentUser?.userId
                 ? "Bạn: "
                 : `${user.lastMessage.senderName}: `}{" "}
               {user.lastMessage.content}

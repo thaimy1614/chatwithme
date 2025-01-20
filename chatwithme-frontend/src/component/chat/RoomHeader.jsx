@@ -4,7 +4,6 @@ import { getSocket, getUser } from "../../services/ChatService";
 import { useUser } from "../../context/UserContext";
 import { convertDateTimeZone } from "../../utils/DateTimeZone";
 import { SearchCircleIcon, VideoCameraIcon } from "@heroicons/react/solid";
-import VideoCallModal from "./video-modal/VideoCallModal";
 import { MyUILayout } from "../../utils/MyUILayout";
 
 function UserHeader({

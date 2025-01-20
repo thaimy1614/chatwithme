@@ -20,6 +20,8 @@ export default function Header() {
   useEffect(() => {
     if (currentUser?.photoURL) {
       setAvatar(currentUser.photoURL);
+    } else {
+      setAvatar("/assets/images/logo.png");
     }
   }, [currentUser]);
 
